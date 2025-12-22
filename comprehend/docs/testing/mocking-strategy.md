@@ -7,6 +7,7 @@ This document outlines the principles and patterns for mocking dependencies in t
 ## Table of Contents
 
 - [When to Mock](#when-to-mock)
+- [Choosing the Right Mocking Approach](#choosing-the-right-mocking-approach)
 - [Mock Data Factories](#mock-data-factories)
 - [Mocking Contexts](#mocking-contexts)
 - [Mocking API Clients](#mocking-api-clients)
@@ -62,6 +63,21 @@ This document outlines the principles and patterns for mocking dependencies in t
 - Constants and configuration
 - Type definitions
 - Simple helper functions
+
+### Choosing the Right Mocking Approach
+
+Different dependencies require different mocking strategies:
+
+| Dependency Type | Approach | Example |
+|----------------|----------|---------|
+| React Context | Mock Provider | `<MockAuthProvider>` |
+| API Client / Storage | Mock Factory | `new MockApiClient()` |
+| Simple Callbacks | jest.fn() | `const onPress = jest.fn()` |
+| Pure Utilities | Real Implementation | Import directly |
+
+**For detailed decision guidance, see [Decision Guide](./decision-guide.md).**
+
+**For factory pattern details, see [Factory Pattern](./factory-pattern.md).**
 
 ## Mock Data Factories
 
@@ -300,45 +316,120 @@ describe('ProtectedRoute', () => {
 
 ## Mocking API Clients
 
-### Mock API Client Factory
+### Factory Pattern for I/O Services
+
+For services that perform I/O operations (API calls, storage, native modules), use the **factory pattern** to create reusable, configurable mocks. This provides:
+
+- Method chaining for easy configuration
+- Interaction capture for verification
+- Stateful behavior simulation
+- Clear/reset methods for test isolation
+
+**For detailed guidance on factory patterns, see [Factory Pattern](./factory-pattern.md).**
+
+**For deciding when to use factories, see [Decision Guide](./decision-guide.md).**
+
+### Mock API Client Factory Example
 
 ```typescript
 // utils/api/__tests__/ApiClient.mock.ts
-import { ApiClient } from '../ApiClient';
 
-export function createMockApiClient(): jest.Mocked<ApiClient> {
-  return {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
-    request: jest.fn(),
-  } as jest.Mocked<ApiClient>;
+/**
+ * Mock API client factory for testing HTTP interactions
+ * Use this when components/services need to make API calls
+ */
+export class MockApiClient {
+  private responses = new Map<string, any>();
+  private errors = new Map<string, Error>();
+  private capturedRequests: Array<{method: string, url: string, data?: any}> = [];
+
+  /**
+   * Configure mock response for a URL
+   */
+  withResponse(url: string, response: any): this {
+    this.responses.set(url, response);
+    return this;
+  }
+
+  /**
+   * Configure error for a URL
+   */
+  withError(url: string, error: Error): this {
+    this.errors.set(url, error);
+    return this;
+  }
+
+  /**
+   * Get all captured requests
+   */
+  getCapturedRequests() {
+    return this.capturedRequests;
+  }
+
+  /**
+   * Clear all state for test isolation
+   */
+  clear(): void {
+    this.responses.clear();
+    this.errors.clear();
+    this.capturedRequests = [];
+  }
+
+  async get(url: string) {
+    this.capturedRequests.push({ method: 'GET', url });
+    if (this.errors.has(url)) throw this.errors.get(url);
+    return this.responses.get(url) || { data: null };
+  }
+
+  async post(url: string, data?: any) {
+    this.capturedRequests.push({ method: 'POST', url, data });
+    if (this.errors.has(url)) throw this.errors.get(url);
+    return this.responses.get(url) || { data: null };
+  }
 }
 
-// Usage with specific responses
+// Usage: Dependency injection with factory
 describe('DataService', () => {
+  let mockApiClient: MockApiClient;
+  let service: DataService;
+
+  beforeEach(() => {
+    mockApiClient = new MockApiClient();
+    service = new DataService(mockApiClient); // Inject mock
+  });
+
   it('Should fetch data from API', async () => {
-    const mockApiClient = createMockApiClient();
-    mockApiClient.get.mockResolvedValue({
+    mockApiClient.withResponse('/items', {
       data: [{ id: '1', name: 'Item 1' }],
-      status: 200,
     });
 
-    const service = new DataService(mockApiClient);
     const result = await service.fetchItems();
 
-    expect(mockApiClient.get).toHaveBeenCalledWith('/items');
     expect(result).toEqual([{ id: '1', name: 'Item 1' }]);
+    expect(mockApiClient.getCapturedRequests()[0].url).toBe('/items');
   });
 
   it('Should handle API errors', async () => {
-    const mockApiClient = createMockApiClient();
-    mockApiClient.get.mockRejectedValue(new Error('Network error'));
-
-    const service = new DataService(mockApiClient);
+    mockApiClient.withError('/items', new Error('Network error'));
 
     await expect(service.fetchItems()).rejects.toThrow('Network error');
+  });
+});
+```
+
+### Simple Mock for One-Off Tests
+
+For simple cases where factory is overkill, use `jest.fn()`:
+
+```typescript
+describe('SimpleComponent', () => {
+  it('Should call API on mount', () => {
+    const mockGet = jest.fn().mockResolvedValue({ data: [] });
+    const mockApiClient = { get: mockGet };
+
+    render(<SimpleComponent apiClient={mockApiClient} />);
+
+    expect(mockGet).toHaveBeenCalledWith('/data');
   });
 });
 ```
@@ -454,50 +545,93 @@ describe('Storage', () => {
 
 ## Advanced Mocking Patterns
 
-### Mock Implementation with State
+### Factory with State Management
 
-@@ These patterns should reflect dependency injection for tests
-@@ The factory then will have a dedicated `clear` or `reset` function to ensure no side effects from state
+Use factory classes to maintain state across operations. This pattern uses **dependency injection** where the service receives the mock as a constructor parameter:
 
 ```typescript
-function createStatefulMockApiClient() {
-  const items: any[] = [];
+// Mock factory with internal state
+export class MockApiClient {
+  private items: any[] = [];
+  private capturedRequests: Array<{method: string, url: string}> = [];
 
-  return {
-    get: jest.fn(async (url: string) => {
-      if (url === '/items') {
-        return { data: items, status: 200 };
-      }
-      throw new Error('Not found');
-    }),
-    post: jest.fn(async (url: string, data: any) => {
-      if (url === '/items') {
-        const newItem = { ...data, id: `${items.length + 1}` };
-        items.push(newItem);
-        return { data: newItem, status: 201 };
-      }
-    }),
-    delete: jest.fn(async (url: string) => {
-      const id = url.split('/').pop();
-      const index = items.findIndex(item => item.id === id);
-      if (index !== -1) {
-        items.splice(index, 1);
-        return { status: 204 };
-      }
-      throw new Error('Not found');
-    }),
-  };
+  /**
+   * Clear all state between tests
+   */
+  clear(): void {
+    this.items = [];
+    this.capturedRequests = [];
+  }
+
+  getCapturedRequests() {
+    return this.capturedRequests;
+  }
+
+  async get(url: string) {
+    this.capturedRequests.push({ method: 'GET', url });
+    
+    if (url === '/items') {
+      return { data: this.items, status: 200 };
+    }
+    throw new Error('Not found');
+  }
+
+  async post(url: string, data: any) {
+    this.capturedRequests.push({ method: 'POST', url });
+    
+    if (url === '/items') {
+      const newItem = { ...data, id: `${this.items.length + 1}` };
+      this.items.push(newItem);
+      return { data: newItem, status: 201 };
+    }
+  }
+
+  async delete(url: string) {
+    this.capturedRequests.push({ method: 'DELETE', url });
+    
+    const id = url.split('/').pop();
+    const index = this.items.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+      return { status: 204 };
+    }
+    throw new Error('Not found');
+  }
 }
 
-describe('CRUD Operations', () => {
-  it('Should create, read, and delete items', async () => {
-    const mockClient = createStatefulMockApiClient();
-    const service = new DataService(mockClient);
+// Service with dependency injection
+class DataService {
+  constructor(private apiClient: MockApiClient) {}
 
+  async createItem(data: any) {
+    return this.apiClient.post('/items', data);
+  }
+
+  async fetchItems() {
+    const response = await this.apiClient.get('/items');
+    return response.data;
+  }
+
+  async deleteItem(id: string) {
+    return this.apiClient.delete(`/items/${id}`);
+  }
+}
+
+// Tests with proper isolation
+describe('CRUD Operations', () => {
+  let mockApiClient: MockApiClient;
+  let service: DataService;
+
+  beforeEach(() => {
+    mockApiClient = new MockApiClient();
+    service = new DataService(mockApiClient); // Inject mock
+  });
+
+  it('Should create, read, and delete items', async () => {
     // Create
     await service.createItem({ name: 'Item 1' });
     
-    // Read
+    // Read (factory maintains state)
     const items = await service.fetchItems();
     expect(items).toHaveLength(1);
     expect(items[0].name).toBe('Item 1');
@@ -507,44 +641,68 @@ describe('CRUD Operations', () => {
     const remainingItems = await service.fetchItems();
     expect(remainingItems).toHaveLength(0);
   });
+
+  it('Should track all requests', async () => {
+    await service.createItem({ name: 'Item 1' });
+    await service.fetchItems();
+    await service.deleteItem('1');
+
+    const requests = mockApiClient.getCapturedRequests();
+    expect(requests).toHaveLength(3);
+    expect(requests[0].method).toBe('POST');
+    expect(requests[1].method).toBe('GET');
+    expect(requests[2].method).toBe('DELETE');
+  });
 });
 ```
 
-### Mock with Delays
+### Factory with Delays
+
+Add delay support to simulate network latency:
 
 ```typescript
-function createMockApiClientWithDelay(delay: number = 100) {
-  return {
-    get: jest.fn(async (url: string) => {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return { data: [], status: 200 };
-    }),
-    post: jest.fn(async (url: string, data: any) => {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return { data, status: 201 };
-    }),
-  };
+export class MockApiClient {
+  private delay?: number;
+
+  withDelay(ms: number): this {
+    this.delay = ms;
+    return this;
+  }
+
+  clear(): void {
+    this.delay = undefined;
+  }
+
+  async get(url: string) {
+    if (this.delay) {
+      await new Promise(resolve => setTimeout(resolve, this.delay));
+    }
+    return { data: [], status: 200 };
+  }
 }
 
+// Usage with dependency injection
 describe('Loading States', () => {
+  let mockApiClient: MockApiClient;
+
+  beforeEach(() => {
+    mockApiClient = new MockApiClient();
+  });
+
   it('Should show loading indicator during API call', async () => {
-    const mockClient = createMockApiClientWithDelay(1000);
+    mockApiClient.withDelay(100);
+    const service = new DataService(mockApiClient);
     
-    const { getByTestId } = render(
-      <DataComponent apiClient={mockClient} />
+    const { getByTestId, queryByTestId } = render(
+      <DataComponent service={service} />
     );
 
     // Should show loading
     expect(getByTestId('loading')).toBeTruthy();
 
-    // Advance timers
-    await act(async () => {
-      jest.advanceTimersByTime(1000);
-    });
-
-    // Should hide loading
+    // Wait for response
     await waitFor(() => {
-      expect(() => getByTestId('loading')).toThrow();
+      expect(queryByTestId('loading')).toBeNull();
     });
   });
 });

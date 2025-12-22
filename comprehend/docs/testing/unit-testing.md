@@ -10,6 +10,7 @@ This document covers patterns and practices for unit testing individual componen
 - [Hook Testing](#hook-testing)
 - [Utility Testing](#utility-testing)
 - [Mock Provider Pattern](#mock-provider-pattern)
+- [Testing Components with Service Dependencies](#testing-components-with-service-dependencies)
 - [Test ID Pattern](#test-id-pattern)
 - [Async Testing](#async-testing)
 - [User Interaction Testing](#user-interaction-testing)
@@ -448,12 +449,30 @@ describe('isStrongPassword', () => {
 
 ## Mock Provider Pattern
 
-### Creating Mock Providers
+The **Mock Provider pattern** is specifically for testing **React Context**. This pattern wraps components with mock context values to test context-dependent behavior.
+
+**Important:** Do not confuse this with factory patterns for services:
+
+| Pattern | Use For | Example |
+|---------|---------|---------|
+| **Mock Provider** | React Context (auth, theme, data) | `<MockAuthProvider>` |
+| **Mock Factory** | I/O Services (API, storage) | `new MockApiClient()` |
+| **jest.fn()** | Simple callbacks | `const onPress = jest.fn()` |
+
+**For choosing the right approach, see [Decision Guide](./decision-guide.md).**
+
+**For testing services with I/O, see [Factory Pattern](./factory-pattern.md).**
+
+### Creating Mock Providers for Context
 
 ```typescript
 // contexts/__tests__/DataContext.mock.tsx
 import { DataContext, DataContextValue } from '../DataContext';
 
+/**
+ * Create mock value for DataContext
+ * Use this for testing components that consume DataContext
+ */
 export function createMockDataValue(): DataContextValue {
   return {
     state: {
@@ -470,6 +489,10 @@ export function createMockDataValue(): DataContextValue {
   };
 }
 
+/**
+ * Mock provider for DataContext
+ * Use this to wrap components in tests
+ */
 export function MockDataProvider({ value, children }: { value: DataContextValue; children: React.ReactNode }) {
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
@@ -505,6 +528,231 @@ describe('MyComponent', () => {
   });
 });
 ```
+
+## Testing Components with Service Dependencies
+
+When components depend on **services** that perform I/O operations (API calls, storage, etc.), use the **Factory Pattern** with **dependency injection**, not the provider pattern.
+
+**Key difference:**
+
+- **Context (Provider Pattern):** For React state/UI concerns (auth state, theme, navigation)
+- **Services (Factory Pattern):** For I/O operations (API calls, storage, native modules)
+
+**For detailed factory patterns, see [Factory Pattern](./factory-pattern.md).**
+
+### Component with API Client Dependency
+
+**Pattern: Inject service via props:**
+
+```typescript
+// components/UserList.tsx
+import { ApiClient } from '@/services/api';
+
+interface UserListProps {
+  apiClient: ApiClient;
+}
+
+export function UserList({ apiClient }: UserListProps) {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await apiClient.get('/users');
+        setUsers(response.data);
+      } catch (error) {
+        // Handle error
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUsers();
+  }, [apiClient]);
+
+  if (loading) return <Text testID="loading">Loading...</Text>;
+
+  return (
+    <View testID="user-list">
+      {users.map(user => (
+        <Text key={user.id} testID={`user-${user.id}`}>
+          {user.name}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+// components/__tests__/UserList.test.tsx
+import { render, waitFor } from '@testing-library/react-native';
+import { UserList } from '../UserList';
+import { MockApiClient } from '@/services/api/__tests__/ApiClient.mock';
+
+describe('UserList', () => {
+  let mockApiClient: MockApiClient;
+
+  beforeEach(() => {
+    mockApiClient = new MockApiClient(); // Factory instance
+  });
+
+  it('Should fetch and display users', async () => {
+    const mockUsers = [
+      { id: '1', name: 'John Doe' },
+      { id: '2', name: 'Jane Smith' },
+    ];
+
+    mockApiClient.withResponse('/users', { data: mockUsers });
+
+    const { getByTestId } = render(<UserList apiClient={mockApiClient} />);
+
+    // Initially shows loading
+    expect(getByTestId('loading')).toBeTruthy();
+
+    // After load, shows users
+    await waitFor(() => {
+      expect(getByTestId('user-1')).toHaveTextContent('John Doe');
+      expect(getByTestId('user-2')).toHaveTextContent('Jane Smith');
+    });
+
+    // Verify API was called
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
+    expect(mockApiClient.getLastRequest()?.url).toBe('/users');
+  });
+
+  it('Should handle API errors', async () => {
+    mockApiClient.withError('/users', new Error('Network error'));
+
+    const { getByTestId } = render(<UserList apiClient={mockApiClient} />);
+
+    await waitFor(() => {
+      expect(getByTestId('error-message')).toBeTruthy();
+    });
+  });
+});
+```
+
+### Hook with Service Dependency
+
+**Pattern: Inject service into hook:**
+
+```typescript
+// hooks/use-user-data.ts
+import { useState, useEffect } from 'react';
+import { ApiClient } from '@/services/api';
+
+export function useUserData(apiClient: ApiClient, userId: string) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const response = await apiClient.get(`/users/${userId}`);
+        setUser(response.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUser();
+  }, [apiClient, userId]);
+
+  return { user, loading, error };
+}
+
+// hooks/__tests__/use-user-data.test.ts
+import { renderHook, waitFor } from '@testing-library/react-native';
+import { useUserData } from '../use-user-data';
+import { MockApiClient } from '@/services/api/__tests__/ApiClient.mock';
+
+describe('useUserData', () => {
+  let mockApiClient: MockApiClient;
+
+  beforeEach(() => {
+    mockApiClient = new MockApiClient();
+  });
+
+  it('Should fetch user data', async () => {
+    const mockUser = { id: '123', name: 'John Doe', email: 'john@example.com' };
+    mockApiClient.withResponse('/users/123', { data: mockUser });
+
+    const { result } = renderHook(() => useUserData(mockApiClient, '123'));
+
+    // Initially loading
+    expect(result.current.loading).toBe(true);
+
+    // After load
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.error).toBeNull();
+    });
+  });
+
+  it('Should handle errors', async () => {
+    mockApiClient.withError('/users/123', new Error('User not found'));
+
+    const { result } = renderHook(() => useUserData(mockApiClient, '123'));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe('User not found');
+      expect(result.current.user).toBeNull();
+    });
+  });
+});
+```
+
+### Service Provided via Context
+
+Sometimes services are provided through context. In this case, use both patterns:
+
+```typescript
+// contexts/ApiContext.tsx
+const ApiContext = createContext<ApiClient | null>(null);
+
+export function ApiProvider({ children, client }: { children: ReactNode; client: ApiClient }) {
+  return <ApiContext.Provider value={client}>{children}</ApiContext.Provider>;
+}
+
+// components/__tests__/UserList.test.tsx
+import { MockApiClient } from '@/services/api/__tests__/ApiClient.mock';
+
+describe('UserList with Context', () => {
+  let mockApiClient: MockApiClient;
+
+  beforeEach(() => {
+    mockApiClient = new MockApiClient();
+  });
+
+  it('Should fetch users from context API client', async () => {
+    mockApiClient.withResponse('/users', { data: [] });
+
+    const { getByTestId } = render(
+      <ApiProvider client={mockApiClient}>
+        <UserList />
+      </ApiProvider>
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('user-list')).toBeTruthy();
+    });
+
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
+  });
+});
+```
+
+### Key Takeaways
+
+1. **Use Provider Pattern for:** React Context (auth state, theme, UI state)
+2. **Use Factory Pattern for:** Services with I/O (API clients, storage, native modules)
+3. **Inject dependencies:** Pass services as props or via context
+4. **Test isolation:** Use `beforeEach` to create fresh factory instances
+
+**For more examples, see [Factory Pattern](./factory-pattern.md) and [Decision Guide](./decision-guide.md).**
 
 ## Test ID Pattern
 

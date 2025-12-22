@@ -254,14 +254,12 @@ describe('Component', () => {
 
 ### Clear Mocks Between Tests
 
-Always clear mocks to ensure test isolation:
-
-@@ Also include clearing mock factories in this example
+Always clear mocks to ensure test isolation. This applies to both Jest mocks and factory instances:
 
 ```typescript
 describe('Component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.clearAllMocks(); // Clear Jest function mocks
   });
 
   it('Should call function once', () => {
@@ -274,6 +272,68 @@ describe('Component', () => {
     const mockFn = jest.fn();
     // Test (starts fresh, not affected by previous test)
     expect(mockFn).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+### Clear Factory State Between Tests
+
+When using mock factories, clear their state to prevent test pollution:
+
+```typescript
+import { MockApiClient } from '@/utils/api/__tests__/ApiClient.mock';
+
+describe('DataService', () => {
+  let mockApiClient: MockApiClient;
+  let service: DataService;
+
+  beforeEach(() => {
+    jest.clearAllMocks(); // Clear Jest mocks
+    mockApiClient = new MockApiClient(); // Fresh factory instance
+    service = new DataService(mockApiClient);
+  });
+
+  it('Should fetch users', async () => {
+    mockApiClient.withResponse('/users', { data: [] });
+    await service.fetchUsers();
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
+  });
+
+  it('Should fetch posts', async () => {
+    // Fresh instance - no requests from previous test
+    mockApiClient.withResponse('/posts', { data: [] });
+    await service.fetchPosts();
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1); // Not 2
+  });
+});
+```
+
+### Reusable Factory with Clear Method
+
+Alternatively, reuse factory instance with `.clear()` method:
+
+```typescript
+describe('DataService', () => {
+  const mockApiClient = new MockApiClient(); // Reusable instance
+  let service: DataService;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockApiClient.clear(); // Clear factory state
+    service = new DataService(mockApiClient);
+  });
+
+  it('Should fetch users', async () => {
+    mockApiClient.withResponse('/users', { data: [] });
+    await service.fetchUsers();
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
+  });
+
+  it('Should fetch posts', async () => {
+    // State cleared - no requests from previous test
+    mockApiClient.withResponse('/posts', { data: [] });
+    await service.fetchPosts();
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
   });
 });
 ```
@@ -363,6 +423,97 @@ describe('TodoList', () => {
   });
 });
 ```
+
+### Test Isolation with Factories
+
+When using mock factories, ensure proper isolation between tests:
+
+**Pattern 1: Fresh Instance Per Test:**
+
+```typescript
+describe('DataService', () => {
+  let mockApiClient: MockApiClient;
+
+  beforeEach(() => {
+    // Create fresh instance for complete isolation
+    mockApiClient = new MockApiClient();
+  });
+
+  it('Test 1 - Should fetch users', async () => {
+    mockApiClient.withResponse('/users', { data: [] });
+    const service = new DataService(mockApiClient);
+    
+    await service.fetchUsers();
+    
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
+  });
+
+  it('Test 2 - Should fetch posts', async () => {
+    // Fresh instance - no state from Test 1
+    mockApiClient.withResponse('/posts', { data: [] });
+    const service = new DataService(mockApiClient);
+    
+    await service.fetchPosts();
+    
+    // Exactly 1 request, not affected by Test 1
+    expect(mockApiClient.getCapturedRequests()).toHaveLength(1);
+  });
+});
+```
+
+**Pattern 2: Reusable Instance with Clear:**
+
+```typescript
+describe('DataService', () => {
+  const mockApiClient = new MockApiClient(); // Reusable
+
+  beforeEach(() => {
+    // Clear state but reuse instance
+    mockApiClient.clear();
+  });
+
+  it('Test 1 - Should handle error', async () => {
+    mockApiClient.withError('/users', new Error('Failed'));
+    const service = new DataService(mockApiClient);
+    
+    await expect(service.fetchUsers()).rejects.toThrow('Failed');
+  });
+
+  it('Test 2 - Should handle success', async () => {
+    // State cleared - error configuration gone
+    mockApiClient.withResponse('/users', { data: [] });
+    const service = new DataService(mockApiClient);
+    
+    await expect(service.fetchUsers()).resolves.toBeTruthy();
+  });
+});
+```
+
+**Verify Factory State is Cleared:**
+
+```typescript
+describe('API Client Factory', () => {
+  const mockClient = new MockApiClient();
+
+  beforeEach(() => {
+    mockClient.clear();
+  });
+
+  it('Should start with empty request history', () => {
+    expect(mockClient.getCapturedRequests()).toHaveLength(0);
+  });
+
+  it('Should not have previous test configurations', async () => {
+    // Previous test may have configured responses
+    // This should throw because no response configured
+    await expect(mockClient.get('/unconfigured')).resolves.toEqual({
+      data: null,
+    });
+  });
+});
+```
+
+**For more on factory patterns, see [Factory Pattern](./factory-pattern.md).**
 
 ## Assertions
 

@@ -22,6 +22,32 @@ Our testing strategy follows these core principles:
 4. **Realistic testing**: Use real navigation and contexts with mock data
 5. **Maintainability**: Keep tests readable, organized, and easy to update
 
+## Quick Decision Guide
+
+**What are you testing?**
+
+```plaintext
+Component → What dependencies does it have?
+│
+├─ Uses React Context (auth, theme, data)
+│  └─ Use: Mock Provider Pattern
+│     See: Unit Testing - Mock Provider Pattern
+│
+├─ Makes API calls or uses storage
+│  └─ Use: Mock Factory Pattern
+│     See: Factory Pattern & Decision Guide
+│
+├─ Has simple callbacks (onPress, onChange)
+│  └─ Use: jest.fn() directly
+│     See: Unit Testing - Component Testing
+│
+└─ Pure utility or business logic
+   └─ Use: Real implementation, no mocking
+      See: Unit Testing - Utility Testing
+```
+
+**For detailed decision trees and tables, see [Decision Guide](./decision-guide.md).**
+
 ## Documentation Navigation
 
 ### Quick Start
@@ -34,9 +60,23 @@ Our testing strategy follows these core principles:
 
 **Setting up tests for a component?** Read:
 
-1. [Mocking Strategy](./mocking-strategy.md) - Understand what and how to mock
-2. [Unit Testing](./unit-testing.md) - Test individual components
-3. [Best Practices](./best-practices.md) - Follow coding standards
+1. [Decision Guide](./decision-guide.md) - Choose the right mocking approach
+2. [Mocking Strategy](./mocking-strategy.md) - Understand what and how to mock
+3. [Unit Testing](./unit-testing.md) - Test individual components
+4. [Best Practices](./best-practices.md) - Follow coding standards
+
+**Testing components with API calls or storage?** Read:
+
+1. [Decision Guide](./decision-guide.md) - Confirm factory pattern is appropriate
+2. [Factory Pattern](./factory-pattern.md) - Learn how to create mock factories
+3. [Unit Testing](./unit-testing.md#testing-components-with-service-dependencies) - See dependency injection examples
+4. [Best Practices](./best-practices.md#test-isolation-with-factories) - Ensure proper test isolation
+
+**Testing components with React Context?** Read:
+
+1. [Decision Guide](./decision-guide.md) - Understand provider vs factory
+2. [Unit Testing](./unit-testing.md#mock-provider-pattern) - Create mock providers
+3. [Mocking Strategy](./mocking-strategy.md#mocking-contexts) - Context mocking patterns
 
 **Testing complete flows?** Read:
 
@@ -109,8 +149,9 @@ Guidelines for what to mock and how to mock it effectively.
 **Topics:**
 
 - When to mock vs. use real implementations
+- Choosing the right mocking approach
 - Mocking contexts with mock providers
-- Mocking API clients
+- Mocking API clients with factory pattern
 - Mocking navigation
 - Mock data factories
 - External dependency mocking
@@ -119,8 +160,9 @@ Guidelines for what to mock and how to mock it effectively.
 
 - You're unsure what to mock in your tests
 - You need to create mock providers for contexts
-- You're mocking API calls
+- You're mocking API calls or services
 - You're setting up mock data
+- You need to choose between factory, provider, or direct mock
 
 #### [Best Practices](./best-practices.md)
 
@@ -131,6 +173,7 @@ Coding standards and conventions for writing quality tests.
 - Test structure and organization
 - Naming conventions
 - Test isolation patterns
+- Factory state clearing
 - Descriptive test cases
 - Code coverage guidelines
 - Common pitfalls and solutions
@@ -141,6 +184,47 @@ Coding standards and conventions for writing quality tests.
 - You're establishing testing standards
 - You're reviewing test code
 - You need to improve test quality
+
+#### [Factory Pattern](./factory-pattern.md)
+
+Comprehensive guide to using factory pattern for mock objects.
+
+**Topics:**
+
+- When to use factory pattern
+- Creating mock factories for I/O services
+- Method chaining and configuration
+- Interaction capture and verification
+- State management in factories
+- Test isolation with `.clear()` method
+
+**Read this if:**
+
+- You're mocking API clients or storage services
+- You need to capture and verify interactions
+- You want reusable mocks across test files
+- You're testing services with complex behaviors
+- You need to ensure test isolation
+
+#### [Decision Guide](./decision-guide.md)
+
+Quick decision trees and tables for choosing the right testing approach.
+
+**Topics:**
+
+- Decision trees for mocking approaches
+- Factory vs Provider vs Direct Mock comparison
+- Common testing scenarios and solutions
+- When to use each pattern
+- Step-by-step decision process
+
+**Read this if:**
+
+- You're unsure which mocking approach to use
+- You need quick guidance on testing patterns
+- You're choosing between factory and provider
+- You want to understand when to use jest.fn() vs factory
+- You're looking for testing pattern examples
 
 ## Testing Layers
 
@@ -238,6 +322,8 @@ describe('MyScreen', () => {
 | Pattern | Use Case | Documentation |
 |---------|----------|---------------|
 | Mock Provider | Testing context-dependent components | [Unit Testing](./unit-testing.md#mock-provider-pattern) |
+| Mock Factory | Testing I/O services (API, storage) | [Factory Pattern](./factory-pattern.md) |
+| Decision Guide | Choosing mocking approach | [Decision Guide](./decision-guide.md) |
 | Test IDs | Selecting elements in tests | [Unit Testing](./unit-testing.md#test-id-pattern) |
 | Navigation Testing | Testing screen navigation | [Integration Testing](./integration-testing.md#navigation-testing) |
 | Async Testing | Testing async operations | [Unit Testing](./unit-testing.md#async-testing) |
@@ -288,6 +374,17 @@ src/
 - Verifying complete user workflows
 - Testing interactions between components
 
+### Use Factory Pattern When
+
+- Testing services that perform I/O operations
+- Need to capture and verify interactions
+- Multiple test scenarios require different behaviors
+- Same mock needed across multiple test files
+- Testing API clients, storage services, or native modules
+- Need to ensure test isolation with state clearing
+
+**For detailed guidance, see [Factory Pattern](./factory-pattern.md) and [Decision Guide](./decision-guide.md).**
+
 ### Don't Test
 
 - Third-party library internals
@@ -334,6 +431,8 @@ npm test -- --testNamePattern="Should render"
 3. **Need to test navigation?** See [Integration Testing](./integration-testing.md)
 4. **Want best practices?** Read [Best Practices](./best-practices.md)
 5. **Unsure what to mock?** Check [Mocking Strategy](./mocking-strategy.md)
+6. **Mocking services?** See [Factory Pattern](./factory-pattern.md)
+7. **Need quick guidance?** Use [Decision Guide](./decision-guide.md)
 
 ## Additional Resources
 

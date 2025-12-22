@@ -37,13 +37,21 @@ Comprehensive guide to testing patterns used in this project, organized into foc
 - **[Mocking Strategy](./testing/mocking-strategy.md)** - Principles for what and how to mock
 - **[Best Practices](./testing/best-practices.md)** - Coding standards and conventions for tests
 
+**Mocking Patterns:**
+
+- **[Factory Pattern](./testing/factory-pattern.md)** - Creating mock factories for I/O services (API, storage)
+- **[Decision Guide](./testing/decision-guide.md)** - Quick decision trees for choosing the right mocking approach
+
 **Read this if:**
 
 - You're writing tests for any component
 - You need to mock contexts or API calls
+- You need to choose between factory, provider, or direct mocks
+- You're mocking API clients or storage services
 - You're unsure how to test navigation flows
 - You're setting up test configuration
 - You need guidance on which testing approach to use
+- You need to ensure test isolation with proper mock clearing
 
 ### [Context Pattern](./context-pattern.md)
 
@@ -236,6 +244,59 @@ Guidelines for styling components with React Native StyleSheet.
    });
    ```
 
+### For Testing Components with Services
+
+1. **Choose Mocking Approach** ([Decision Guide](./testing/decision-guide.md))
+
+   - React Context → Use Mock Provider
+   - API Client/Storage → Use Mock Factory
+   - Simple Callback → Use jest.fn()
+
+2. **Create Mock Factory for Services** ([Factory Pattern](./testing/factory-pattern.md))
+
+   ```typescript
+   export class MockApiClient {
+     private responses = new Map();
+     
+     withResponse(url: string, data: any): this {
+       this.responses.set(url, data);
+       return this;
+     }
+     
+     clear(): void {
+       this.responses.clear();
+     }
+     
+     async get(url: string) {
+       return this.responses.get(url) || { data: null };
+     }
+   }
+   ```
+
+3. **Use Dependency Injection** ([Unit Testing](./testing/unit-testing.md))
+
+   ```typescript
+   describe('MyComponent', () => {
+     let mockApiClient: MockApiClient;
+
+     beforeEach(() => {
+       mockApiClient = new MockApiClient();
+     });
+
+     it('Should fetch data', async () => {
+       mockApiClient.withResponse('/data', { items: [] });
+       
+       const { getByTestId } = render(
+         <MyComponent apiClient={mockApiClient} />
+       );
+       
+       await waitFor(() => {
+         expect(getByTestId('data-list')).toBeTruthy();
+       });
+     });
+   });
+   ```
+
 ### For Adding API Integration
 
 1. **Define API Types** ([Types and Configuration](./types-and-configuration.md))
@@ -397,12 +458,23 @@ Guidelines for styling components with React Native StyleSheet.
 - Verifying navigation flows
 - Testing context behavior
 - Validating API integrations
+- Mocking I/O operations (API calls, storage, native modules)
+
+**Choosing the right mocking approach:**
+
+- **Mock Provider Pattern**: For React Context (auth, theme, navigation state)
+- **Mock Factory Pattern**: For I/O services (API clients, storage, platform APIs)
+- **Direct jest.fn()**: For simple callbacks (onPress, onChange)
+
+**For detailed guidance, see [Decision Guide](./testing/decision-guide.md).**
 
 **Always use:**
 
 - Mock providers for context testing
+- Mock factories for service testing with dependency injection
 - Test IDs for element selection
 - Descriptive test names
+- Proper mock clearing between tests (`.clear()` for factories, `jest.clearAllMocks()`)
 - Isolation between tests
 
 ## Examples by Use Case
@@ -448,10 +520,25 @@ Guidelines for styling components with React Native StyleSheet.
 ### I'm writing tests for existing components
 
 1. Read: [Testing Summary](./testing/summary.md) - Get an overview
-2. Read: [Testing Setup](./testing/setup.md) - Ensure proper configuration
-3. Read: [Unit Testing](./testing/unit-testing.md) - Test components
-4. Read: [Mocking Strategy](./testing/mocking-strategy.md) - Mock dependencies
-5. Read: [Best Practices](./testing/best-practices.md) - Follow conventions
+2. Read: [Decision Guide](./testing/decision-guide.md) - Choose the right mocking approach
+3. Read: [Testing Setup](./testing/setup.md) - Ensure proper configuration
+4. Read: [Unit Testing](./testing/unit-testing.md) - Test components
+5. Read: [Mocking Strategy](./testing/mocking-strategy.md) - Mock dependencies
+6. Read: [Best Practices](./testing/best-practices.md) - Follow conventions
+
+### I'm mocking API clients or storage services
+
+1. Read: [Decision Guide](./testing/decision-guide.md) - Confirm factory pattern is appropriate
+2. Read: [Factory Pattern](./testing/factory-pattern.md) - Learn factory implementation
+3. Read: [Unit Testing](./testing/unit-testing.md#testing-components-with-service-dependencies) - See dependency injection examples
+4. Read: [Best Practices](./testing/best-practices.md) - Ensure proper test isolation
+
+### I'm testing components with React Context
+
+1. Read: [Decision Guide](./testing/decision-guide.md) - Understand provider vs factory
+2. Read: [Unit Testing](./testing/unit-testing.md#mock-provider-pattern) - Create mock providers
+3. Read: [Mocking Strategy](./testing/mocking-strategy.md#mocking-contexts) - Context mocking patterns
+4. Read: [Best Practices](./testing/best-practices.md) - Follow conventions
 
 ## Directory Structure
 
@@ -500,7 +587,9 @@ comprehend/
         ├── unit-testing.md
         ├── integration-testing.md
         ├── mocking-strategy.md
-        └── best-practices.md
+        ├── best-practices.md
+        ├── factory-pattern.md
+        └── decision-guide.md
 ```
 
 ## Contributing to Documentation
