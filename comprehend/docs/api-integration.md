@@ -7,21 +7,24 @@ This document describes the pattern for integrating with the AWS backend API, in
 ## Table of Contents
 
 - [Authentication with Cognito](#authentication-with-cognito)
-  - [Why Not Amplify](#why-not-amplify)
   - [Authentication Setup](#authentication-setup)
   - [Sign Up Flow](#sign-up-flow)
   - [Sign In Flow](#sign-in-flow)
   - [Session Management](#session-management)
   - [Token Storage](#token-storage)
+  - [Password Management](#password-management)
+  - [Authentication Context Integration](#authentication-context-integration)
 - [API Client Architecture](#api-client-architecture)
-- [AWS IAM Signing](#aws-iam-signing)
+- [API Authentication with Bearer Token](#api-authentication-with-bearer-token)
 - [Request/Response Types](#requestresponse-types)
 - [Error Handling](#error-handling)
 - [Retry Logic](#retry-logic)
 - [Caching Strategies](#caching-strategies)
 - [Integration with Contexts](#integration-with-contexts)
-- [Testing API Clients](#testing-api-clients)
 - [Complete Examples](#complete-examples)
+- [Best Practices](#best-practices)
+- [Authentication Flow Summary](#authentication-flow-summary)
+- [API Call Flow](#api-call-flow)
 
 ## Authentication with Cognito
 
@@ -475,8 +478,6 @@ export const isUserLoggedIn = (): boolean => {
 
 ### Token Storage
 
-@@ Revise to use email attribute only
-
 ```typescript
 // services/auth/storage.ts
 import * as SecureStore from 'expo-secure-store';
@@ -492,7 +493,6 @@ export interface StoredTokens {
 }
 
 export interface StoredUserInfo {
-  username: string;
   email: string;
   sub: string;
 }
@@ -656,7 +656,6 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: {
-    username: string;
     email: string;
     sub: string;
   } | null;
@@ -773,7 +772,6 @@ export function createAuthActions(
         });
 
         await storeUserInfo({
-          username,
           email: userAttributes.email,
           sub: userAttributes.sub,
         });
@@ -783,7 +781,6 @@ export function createAuthActions(
           isAuthenticated: true,
           isLoading: false,
           user: {
-            username,
             email: userAttributes.email,
             sub: userAttributes.sub,
           },
@@ -823,7 +820,6 @@ export function createAuthActions(
           isAuthenticated: true,
           isLoading: false,
           user: {
-            username: userAttributes.email,
             email: userAttributes.email,
             sub: userAttributes.sub,
           },
@@ -1140,18 +1136,17 @@ export class ApiError extends Error {
 }
 ```
 
-## AWS IAM Signing
+## API Authentication with Bearer Token
 
-There are two approaches to signing API requests to AWS API Gateway:
+This implementation uses Bearer Token authentication, where you send the Cognito ID token directly to API Gateway. This is the recommended approach for most mobile applications.
 
-1. **Bearer Token (ID Token)** - Simpler, use Cognito ID token directly
-2. **IAM Signature v4** - More complex, exchange ID token for temporary AWS credentials
+### Benefits of Bearer Token Authentication
 
-### Approach 1: Bearer Token Authentication (Recommended)
-
-@@ Simplify to include only approach 1
-
-This is the simpler approach where you send the Cognito ID token directly to API Gateway.
+- ✅ **Simple** - No additional AWS services required
+- ✅ **Fast** - Direct token validation by API Gateway
+- ✅ **Secure** - Tokens are short-lived and cryptographically signed
+- ✅ **Scalable** - API Gateway handles validation automatically
+- ✅ **No credentials** - No need to manage AWS credentials client-side
 
 #### Configure API Gateway
 
@@ -1216,250 +1211,6 @@ export class ApiClient {
   // ... buildUrl, handleResponse (same as before)
 }
 ```
-
-### Approach 2: IAM Signature v4 Authentication
-
-Use this approach when you need IAM-level permissions or accessing resources beyond API Gateway.
-
-#### Getting AWS Credentials from Cognito Identity Pool
-
-```typescript
-// services/auth/credentials.ts
-import {
-  CognitoIdentityClient,
-  GetIdCommand,
-  GetCredentialsForIdentityCommand,
-} from '@aws-sdk/client-cognito-identity';
-
-export interface AwsCredentials {
-  accessKeyId: string;
-  secretAccessKey: string;
-  sessionToken: string;
-  expiration: Date;
-}
-
-/**
- * Exchange Cognito ID token for temporary AWS credentials
- * via Cognito Identity Pool
- */
-export async function getAwsCredentials(
-  idToken: string
-): Promise<AwsCredentials> {
-  const region = process.env.EXPO_PUBLIC_AWS_REGION!;
-  const identityPoolId = process.env.EXPO_PUBLIC_IDENTITY_POOL_ID!;
-  const userPoolId = process.env.EXPO_PUBLIC_USER_POOL_ID!;
-
-  const client = new CognitoIdentityClient({ region });
-
-  // Step 1: Get Identity ID from Identity Pool
-  const loginKey = `cognito-idp.${region}.amazonaws.com/${userPoolId}`;
-  
-  const getIdResponse = await client.send(
-    new GetIdCommand({
-      IdentityPoolId: identityPoolId,
-      Logins: {
-        [loginKey]: idToken,
-      },
-    })
-  );
-
-  if (!getIdResponse.IdentityId) {
-    throw new Error('Failed to get identity ID');
-  }
-
-  // Step 2: Get temporary AWS credentials
-  const getCredsResponse = await client.send(
-    new GetCredentialsForIdentityCommand({
-      IdentityId: getIdResponse.IdentityId,
-      Logins: {
-        [loginKey]: idToken,
-      },
-    })
-  );
-
-  const creds = getCredsResponse.Credentials;
-  if (!creds?.AccessKeyId || !creds?.SecretKey || !creds?.SessionToken) {
-    throw new Error('Failed to get credentials');
-  }
-
-  return {
-    accessKeyId: creds.AccessKeyId,
-    secretAccessKey: creds.SecretKey,
-    sessionToken: creds.SessionToken,
-    expiration: creds.Expiration || new Date(Date.now() + 3600000),
-  };
-}
-```
-
-#### Credential Manager
-
-```typescript
-// services/auth/CredentialManager.ts
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAwsCredentials, AwsCredentials } from './credentials';
-
-const CREDENTIALS_KEY = '@aws_credentials';
-
-export class CredentialManager {
-  private credentials: AwsCredentials | null = null;
-
-  /**
-   * Get current AWS credentials, refreshing if expired
-   */
-  async getCredentials(idToken: string): Promise<AwsCredentials> {
-    // Return cached credentials if still valid
-    if (this.credentials && !this.isExpired(this.credentials)) {
-      return this.credentials;
-    }
-
-    // Try to load from storage
-    const cached = await this.loadFromStorage();
-    if (cached && !this.isExpired(cached)) {
-      this.credentials = cached;
-      return cached;
-    }
-
-    // Get new credentials from Cognito Identity Pool
-    this.credentials = await getAwsCredentials(idToken);
-
-    // Cache credentials
-    await this.saveToStorage(this.credentials);
-
-    return this.credentials;
-  }
-
-  /**
-   * Clear cached credentials
-   */
-  async clearCredentials(): Promise<void> {
-    this.credentials = null;
-    await AsyncStorage.removeItem(CREDENTIALS_KEY);
-  }
-
-  /**
-   * Check if credentials are expired or about to expire
-   */
-  private isExpired(credentials: AwsCredentials): boolean {
-    // Refresh 5 minutes before expiration
-    const expirationTime = credentials.expiration.getTime();
-    const currentTime = Date.now();
-    const bufferTime = 5 * 60 * 1000; // 5 minutes
-    
-    return expirationTime - currentTime < bufferTime;
-  }
-
-  /**
-   * Load credentials from storage
-   */
-  private async loadFromStorage(): Promise<AwsCredentials | null> {
-    try {
-      const json = await AsyncStorage.getItem(CREDENTIALS_KEY);
-      if (!json) return null;
-
-      const data = JSON.parse(json);
-      return {
-        ...data,
-        expiration: new Date(data.expiration),
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Save credentials to storage
-   */
-  private async saveToStorage(credentials: AwsCredentials): Promise<void> {
-    await AsyncStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials));
-  }
-}
-```
-
-#### API Client with IAM Signing
-
-```typescript
-// utils/api/ApiClient.ts (IAM version)
-import { SignatureV4 } from '@aws-sdk/signature-v4';
-import { Sha256 } from '@aws-crypto/sha256-js';
-import { HttpRequest } from '@aws-sdk/protocol-http';
-import { CredentialManager } from '@/services/auth/CredentialManager';
-
-export class ApiClient {
-  private credentialManager = new CredentialManager();
-
-  constructor(
-    private readonly config: ApiConfig,
-    private readonly getIdToken: () => Promise<string>
-  ) {}
-
-  async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<ApiResponse<T>> {
-    const { method = 'GET', headers = {}, body, params } = options;
-
-    // Get AWS credentials
-    const idToken = await this.getIdToken();
-    const credentials = await this.credentialManager.getCredentials(idToken);
-
-    // Build URL
-    const url = this.buildUrl(endpoint, params);
-    const hostname = new URL(this.config.baseUrl).hostname;
-
-    // Create HTTP request
-    const request = new HttpRequest({
-      method,
-      protocol: 'https:',
-      hostname,
-      path: url,
-      headers: {
-        'Content-Type': 'application/json',
-        'host': hostname,
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-    // Sign request with SigV4
-    const signer = new SignatureV4({
-      service: 'execute-api',
-      region: process.env.EXPO_PUBLIC_AWS_REGION!,
-      credentials: {
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-        sessionToken: credentials.sessionToken,
-      },
-      sha256: Sha256,
-    });
-
-    const signedRequest = await signer.sign(request);
-
-    // Make the request
-    const response = await fetch(`${this.config.baseUrl}${url}`, {
-      method: signedRequest.method,
-      headers: signedRequest.headers as Record<string, string>,
-      body: signedRequest.body as string | undefined,
-    });
-
-    return this.handleResponse<T>(response);
-  }
-
-  // ... rest of methods
-}
-```
-
-### Which Approach to Use?
-
-| Feature | Bearer Token | IAM Signature |
-|---------|-------------|---------------|
-| Complexity | ✅ Simple | ⚠️ Complex |
-| Setup | Just User Pool | User Pool + Identity Pool |
-| Use Case | API Gateway only | Multiple AWS services |
-| Token Type | ID Token | Temporary credentials |
-| Refresh | Auto with Cognito | Manual (exchange ID token) |
-| Recommended | ✅ For most apps | For advanced use cases |
-
-**Recommendation:** Start with Bearer Token authentication (Approach 1) unless you need to access other AWS services (S3, DynamoDB, etc.) directly from the client.
 
 ## Request/Response Types
 
@@ -1913,10 +1664,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 ### Data Context with API Integration
 
-#### Using Bearer Token (Recommended)
-
-@@ Focus on bearer token examples for simplicity, no need to mention sigv4 if it won't be used
-
 ```typescript
 // contexts/DataContext/Provider.tsx
 import React, { useState, useMemo, useCallback } from 'react';
@@ -2056,44 +1803,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 }
 ```
 
-#### Using IAM Signature v4
-
-```typescript
-// contexts/DataContext/Provider.tsx (IAM version)
-export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { state: authState, actions: authActions } = useAuthContext();
-  const [state, setState] = useState<DataState>({
-    loading: false,
-    items: [],
-    error: null,
-  });
-
-  // Create API client with IAM signing
-  const api = useMemo(() => {
-    if (!authState.isAuthenticated || !authState.tokens) {
-      return null;
-    }
-
-    const client = new ApiClient(
-      {
-        baseUrl: process.env.EXPO_PUBLIC_API_URL!,
-      },
-      // Pass function to get current ID token for credential exchange
-      async () => {
-        if (!authState.tokens) {
-          throw new Error('No tokens available');
-        }
-        return authState.tokens.idToken;
-      }
-    );
-
-    return new DataApi(client);
-  }, [authState.isAuthenticated, authState.tokens]);
-
-  // ... rest is the same as Bearer Token version
-}
-```
-
 ### Protected Route Pattern
 
 ```typescript
@@ -2147,71 +1856,6 @@ export default function DataScreen() {
     </ProtectedRoute>
   );
 }
-```
-
-## Testing API Clients
-
-@@ All testing should be moved to testing docs
-
-### Mock API Client
-
-```typescript
-// utils/api/__tests__/ApiClient.mock.ts
-
-export function createMockApiClient(): jest.Mocked<ApiClient> {
-  return {
-    request: jest.fn(),
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
-    requestWithRetry: jest.fn(),
-  } as any;
-}
-```
-
-### Testing API Methods
-
-```typescript
-// utils/api/__tests__/DataApi.test.ts
-import { DataApi } from '../DataApi';
-import { createMockApiClient } from './ApiClient.mock';
-
-describe('DataApi', () => {
-  let mockClient: jest.Mocked<ApiClient>;
-  let api: DataApi;
-
-  beforeEach(() => {
-    mockClient = createMockApiClient();
-    api = new DataApi(mockClient);
-  });
-
-  describe('listItems', () => {
-    it('Should fetch items successfully', async () => {
-      const mockResponse = {
-        data: {
-          items: [{ id: '1', title: 'Item 1' }],
-          total: 1,
-        },
-        status: 200,
-        headers: {},
-      };
-
-      mockClient.get.mockResolvedValue(mockResponse);
-
-      const result = await api.listItems();
-
-      expect(mockClient.get).toHaveBeenCalledWith('/items', {});
-      expect(result).toEqual(mockResponse.data);
-    });
-
-    it('Should handle errors', async () => {
-      mockClient.get.mockRejectedValue(new ApiError('Network error', 500));
-
-      await expect(api.listItems()).rejects.toThrow('Network error');
-    });
-  });
-});
 ```
 
 ## Complete Examples
@@ -2671,164 +2315,71 @@ EXPO_PUBLIC_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod
 
 ## Authentication Flow Summary
 
-@@ Make mermaid diagram
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    User Opens App                            │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-          ┌────────────────────────┐
-          │  Check Stored Tokens   │
-          └────────┬────────────────┘
-                   │
-        ┌──────────┴──────────┐
-        │                     │
-        ▼                     ▼
-   [Tokens Valid]      [No Tokens/Expired]
-        │                     │
-        │                     ▼
-        │            ┌─────────────────┐
-        │            │  Show Login     │
-        │            └────────┬────────┘
-        │                     │
-        │                     ▼
-        │            ┌─────────────────┐
-        │            │ User Signs In   │
-        │            └────────┬────────┘
-        │                     │
-        │            ┌────────┴────────┐
-        │            │                 │
-        │            ▼                 ▼
-        │       [Success]         [MFA Required]
-        │            │                 │
-        │            │                 ▼
-        │            │        ┌─────────────────┐
-        │            │        │  User Enters    │
-        │            │        │  MFA Code       │
-        │            │        └────────┬────────┘
-        │            │                 │
-        │            ◄─────────────────┘
-        │            │
-        │            ▼
-        │     ┌──────────────────┐
-        │     │ Get ID Token     │
-        │     └──────┬───────────┘
-        ▼            │
-   ┌────────────────▼──────────┐
-   │  Store Tokens Securely    │
-   └────────────┬───────────────┘
-                │
-                ▼
-   ┌───────────────────────────┐
-   │  Create API Client with   │
-   │  Token Injection          │
-   └────────────┬──────────────┘
-                │
-                ▼
-   ┌───────────────────────────┐
-   │  User Navigates App       │
-   │  Making API Calls         │
-   └────────────┬──────────────┘
-                │
-                ▼
-   ┌───────────────────────────┐
-   │  API Call                 │
-   │  - Get current token      │
-   │  - Add to Authorization   │
-   │  - Send request           │
-   └────────────┬──────────────┘
-                │
-      ┌─────────┴──────────┐
-      │                    │
-      ▼                    ▼
-  [Success]           [401 Error]
-      │                    │
-      │                    ▼
-      │          ┌─────────────────┐
-      │          │ Try Refresh     │
-      │          └────────┬────────┘
-      │                   │
-      │         ┌─────────┴─────────┐
-      │         │                   │
-      │         ▼                   ▼
-      │    [Success]          [Failed]
-      │         │                   │
-      ▼         ▼                   ▼
-   [Continue]              ┌─────────────────┐
-                           │  Sign Out User  │
-                           │  Clear Tokens   │
-                           │  Show Login     │
-                           └─────────────────┘
+```mermaid
+flowchart TD
+    Start([User Opens App]) --> CheckTokens{Check Stored Tokens}
+    CheckTokens -->|Tokens Valid| CreateClient[Create API Client with Token]
+    CheckTokens -->|No Tokens/Expired| ShowLogin[Show Login Screen]
+    
+    ShowLogin --> UserSignsIn[User Enters Credentials]
+    UserSignsIn --> SignInAttempt{Sign In Result}
+    
+    SignInAttempt -->|Success| GetToken[Get ID Token from Cognito]
+    SignInAttempt -->|MFA Required| ShowMFA[Show MFA Input]
+    
+    ShowMFA --> EnterMFA[User Enters MFA Code]
+    EnterMFA --> GetToken
+    
+    GetToken --> StoreTokens[Store Tokens Securely in SecureStore]
+    StoreTokens --> CreateClient
+    
+    CreateClient --> AppReady[App Ready - User Can Navigate]
+    AppReady --> APICall[Make API Call]
+    
+    APICall --> AddAuth[Add Bearer Token to Authorization Header]
+    AddAuth --> SendRequest[Send Request to API Gateway]
+    
+    SendRequest --> CheckResponse{Response Status}
+    CheckResponse -->|Success 200| Continue[Continue Using App]
+    CheckResponse -->|401 Unauthorized| TryRefresh[Try Token Refresh]
+    
+    TryRefresh --> RefreshResult{Refresh Result}
+    RefreshResult -->|Success| Continue
+    RefreshResult -->|Failed| SignOut[Sign Out User & Clear Tokens]
+    
+    SignOut --> ShowLogin
+    Continue --> AppReady
 ```
 
 ## API Call Flow
 
-```text
-┌──────────────────────────┐
-│  Component needs data    │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  Call context action     │
-│  (e.g., fetchItems())    │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  Get API client from     │
-│  context (with token)    │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  api.listItems()         │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  ApiClient.get()         │
-│  - Get ID token          │
-│  - Add Authorization     │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  fetch() to API Gateway  │
-│  with Bearer token       │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  API Gateway validates   │
-│  token with Cognito      │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  Lambda receives request │
-│  with user context       │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  Lambda processes &      │
-│  returns response        │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  Update context state    │
-│  with response data      │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────────┐
-│  Component re-renders    │
-│  with new data           │
-└──────────────────────────┘
+```mermaid
+sequenceDiagram
+    participant Component
+    participant Context
+    participant ApiClient
+    participant APIGateway as API Gateway
+    participant Cognito
+    participant Lambda
+    
+    Component->>Context: Call action (e.g., fetchItems())
+    Context->>ApiClient: api.listItems()
+    ApiClient->>ApiClient: Get current ID token
+    ApiClient->>ApiClient: Add Bearer token to headers
+    ApiClient->>APIGateway: fetch() with Authorization header
+    
+    APIGateway->>Cognito: Validate JWT token
+    Cognito-->>APIGateway: Token valid + user claims
+    
+    APIGateway->>Lambda: Invoke with user context
+    Lambda->>Lambda: Process request
+    Lambda-->>APIGateway: Return response
+    
+    APIGateway-->>ApiClient: HTTP 200 + JSON response
+    ApiClient-->>Context: Return parsed data
+    Context->>Context: Update state with new data
+    Context-->>Component: State updated
+    Component->>Component: Re-render with new data
 ```
 
 ## Next Steps
@@ -2837,62 +2388,3 @@ EXPO_PUBLIC_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod
 - Read [Navigation Pattern](./navigation-pattern.md) for protected routes
 - Read [Types and Configuration](./types-and-configuration.md) for type definitions
 - Read [Testing Strategy](./testing/) for testing authentication and API integrations
-
-@@ Can remove following sections
-
-## Related AWS Services
-
-### Required Services
-
-- **Cognito User Pool** - User authentication and management
-- **API Gateway** - REST API with Cognito authorizer
-- **Lambda** - Backend business logic
-
-### Optional Services
-
-- **Cognito Identity Pool** - Only if using IAM Signature v4
-- **S3** - If you need direct client access to files
-- **DynamoDB** - If Lambda functions need to access data
-- **CloudWatch** - For logging and monitoring
-
-## Troubleshooting
-
-### Common Issues
-
-#### "No user logged in" error
-
-- Session expired or user signed out
-- Call `getCurrentSession()` to verify
-- Implement auto-refresh logic
-
-#### "Invalid token" error
-
-- Token expired (check expiration time)
-- Wrong token type (use ID token, not access token)
-- Token not from correct User Pool
-
-#### 401 Unauthorized from API
-
-- Token missing from Authorization header
-- API Gateway authorizer not configured
-- Token expired or invalid
-- Check CloudWatch logs for details
-
-#### CORS errors
-
-- API Gateway CORS not configured properly
-- Missing required headers
-- Preflight request failing
-
-#### MFA code not working
-
-- Code expired (valid for 3 minutes)
-- Wrong code entered
-- Request new code
-
-#### Sign up confirmation fails
-
-- Wrong verification code
-- Code expired
-- User already confirmed
-- Check email for latest code
