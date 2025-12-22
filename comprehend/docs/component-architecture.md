@@ -30,16 +30,15 @@ Screen components are full-page views managed by Expo Router:
 
 **Example:**
 
-@@ Test ids and styles are recommended to be imported, so these examples should reflect that as well
-
 ```typescript
 // app/(tabs)/home.tsx
-import { View, FlatList, RefreshControl } from 'react-native';
+import { View, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDataContext } from '@/contexts/DataContext';
 import { DataItem } from '@/components/DataItem';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { HOME_SCREEN_IDS } from '@/components/components.ids';
 
 /**
  * Home screen displays a list of data items
@@ -66,7 +65,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container} testID="home-screen">
+    <View style={styles.container} testID={HOME_SCREEN_IDS.CONTAINER}>
       <FlatList
         data={state.items}
         renderItem={({ item }) => (
@@ -451,19 +450,20 @@ export function Button({
 
 ### Children Prop
 
-@@ Instead import `PropsWithChildren<T>` from react
+Use `PropsWithChildren<T>` from React for components that accept children:
 
 ```typescript
+import { PropsWithChildren } from 'react';
+import { View, Text } from 'react-native';
+
 interface CardProps {
-  /** Card content */
-  children: React.ReactNode;
   /** Optional card title */
   title?: string;
   /** Optional card footer */
   footer?: React.ReactNode;
 }
 
-export function Card({ children, title, footer }: CardProps) {
+export function Card({ children, title, footer }: PropsWithChildren<CardProps>) {
   return (
     <View style={styles.card}>
       {title && <Text style={styles.title}>{title}</Text>}
@@ -507,7 +507,78 @@ export function DataList<T>({
 }
 ```
 
-@@ Add reusable title or container components. This pattern ensures reusability of styles throughout the app, without duplicating styles
+### Reusable Layout Components
+
+Create reusable container and title components to ensure style consistency throughout the app:
+
+```typescript
+// components/ui/Container.tsx
+import { PropsWithChildren } from 'react';
+import { View, ViewStyle } from 'react-native';
+
+interface ContainerProps {
+  /** Custom style override */
+  style?: ViewStyle;
+}
+
+export function Container({ 
+  children, 
+  style 
+}: PropsWithChildren<ContainerProps>) {
+  return (
+    <View style={[styles.container, style]}>
+      {children}
+    </View>
+  );
+}
+```
+
+```typescript
+// components/ui/Title.tsx
+import { PropsWithChildren } from 'react';
+import { Text, TextStyle } from 'react-native';
+
+interface TitleProps {
+  /** Custom style override */
+  style?: TextStyle;
+  /** Test ID */
+  testID?: string;
+}
+
+export function Title({ 
+  children, 
+  style,
+  testID,
+}: PropsWithChildren<TitleProps>) {
+  return (
+    <Text 
+      style={[styles.base, style]}
+      testID={testID}
+    >
+      {children}
+    </Text>
+  );
+}
+```
+
+**Usage Example:**
+
+```typescript
+// app/(tabs)/profile.tsx
+import { Container } from '@/components/ui/Container';
+import { Title } from '@/components/ui/Title';
+
+export default function ProfileScreen() {
+  return (
+    <Container>
+      <Title>My Profile</Title>
+      {/* Profile content */}
+    </Container>
+  );
+}
+```
+
+This pattern ensures reusability of styles throughout the app without duplicating style definitions across multiple screens or components.
 
 ## Component Composition
 
