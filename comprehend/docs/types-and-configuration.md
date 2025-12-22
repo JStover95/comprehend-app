@@ -350,10 +350,11 @@ EXPO_PUBLIC_DEBUG=true
 
 ### Environment-Specific Configuration
 
-@@ Revise so that configuration is pulled from env variables and not hard coded
+**Important**: Always pull configuration from environment variables rather than hardcoding values. This ensures security, flexibility, and proper separation of configuration from code.
 
 ```typescript
 // config/environments.ts
+import { env } from './env';
 
 export interface EnvironmentConfig {
   apiUrl: string;
@@ -362,44 +363,68 @@ export interface EnvironmentConfig {
   enableAnalytics: boolean;
 }
 
-const developmentConfig: EnvironmentConfig = {
-  apiUrl: 'https://dev-api.example.com',
-  region: 'us-east-1',
-  logLevel: 'debug',
-  enableAnalytics: false,
-};
+/**
+ * Get configuration based on current environment
+ * All values are sourced from environment variables
+ */
+export function getConfig(): EnvironmentConfig {
+  const environment = env.environment;
+  
+  return {
+    apiUrl: env.apiUrl,
+    region: env.region,
+    logLevel: getLogLevel(environment),
+    enableAnalytics: getAnalyticsEnabled(environment),
+  };
+}
 
-const stagingConfig: EnvironmentConfig = {
-  apiUrl: 'https://staging-api.example.com',
-  region: 'us-east-1',
-  logLevel: 'info',
-  enableAnalytics: true,
-};
-
-const productionConfig: EnvironmentConfig = {
-  apiUrl: 'https://api.example.com',
-  region: 'us-east-1',
-  logLevel: 'error',
-  enableAnalytics: true,
-};
-
-export function getConfig(environment: Environment): EnvironmentConfig {
+/**
+ * Determine log level based on environment
+ * Can be overridden by EXPO_PUBLIC_LOG_LEVEL env var
+ */
+function getLogLevel(environment: Environment): 'debug' | 'info' | 'warn' | 'error' {
+  const override = process.env.EXPO_PUBLIC_LOG_LEVEL;
+  if (override && ['debug', 'info', 'warn', 'error'].includes(override)) {
+    return override as 'debug' | 'info' | 'warn' | 'error';
+  }
+  
   switch (environment) {
     case 'development':
-      return developmentConfig;
+      return 'debug';
     case 'staging':
-      return stagingConfig;
+      return 'info';
     case 'production':
-      return productionConfig;
+      return 'error';
     default:
-      return developmentConfig;
+      return 'debug';
   }
+}
+
+/**
+ * Determine if analytics should be enabled
+ * Can be overridden by EXPO_PUBLIC_ENABLE_ANALYTICS env var
+ */
+function getAnalyticsEnabled(environment: Environment): boolean {
+  const override = process.env.EXPO_PUBLIC_ENABLE_ANALYTICS;
+  if (override !== undefined) {
+    return override === 'true';
+  }
+  
+  return environment === 'production' || environment === 'staging';
 }
 ```
 
-## Constants Organization
+**Additional Environment Variables** (add to `.env` files):
 
-@@ Use `Object.freeze` for constants
+```.env
+# Optional: Override log level
+EXPO_PUBLIC_LOG_LEVEL=debug
+
+# Optional: Override analytics
+EXPO_PUBLIC_ENABLE_ANALYTICS=false
+```
+
+## Constants Organization
 
 ### Theme Constants
 
