@@ -13,6 +13,7 @@ This directory contains documentation on the design patterns and architectural d
 
 This project follows a structured approach to building a React Native Expo application with file-based routing, Context API state management, and AWS backend integration. The patterns documented here were developed to maximize:
 
+- **Accessibility**: WCAG 2.1 AA compliant, inclusive design for all users (non-negotiable)
 - **Testability**: Easy to write comprehensive tests with React Native Testing Library
 - **Maintainability**: Clear structure that's easy to understand and modify
 - **Consistency**: Similar patterns across different components
@@ -20,6 +21,35 @@ This project follows a structured approach to building a React Native Expo appli
 - **User Experience**: Performant, accessible, and platform-aware components
 
 ## Documentation Structure
+
+### [Accessibility Guidelines](./accessibility.md) ⚠️ CRITICAL
+
+**Accessibility is not optional** - It must be incorporated from the start of every design and development phase.
+
+Comprehensive guide to building inclusive applications that work for everyone, regardless of ability:
+
+**Core Topics:**
+
+- **WCAG Standards**: Compliance with WCAG 2.1 Level AA requirements
+- **Color and Contrast**: Ensuring sufficient contrast ratios (4.5:1 for text)
+- **Touch Targets**: Minimum 44x44 point interactive elements
+- **Screen Reader Support**: VoiceOver and TalkBack compatibility
+- **Keyboard Navigation**: Full functionality without touch
+- **Focus Management**: Clear visual feedback and logical focus order
+- **Alternative Text**: Proper descriptions for images and icons
+- **Forms and Input**: Accessible form design with proper labels and error handling
+- **Motion and Animation**: Respecting reduced motion preferences
+- **Testing**: Manual and automated accessibility testing
+
+**Read this if:**
+
+- You're designing or building any component (yes, this means everyone)
+- You're choosing colors or typography
+- You're creating interactive elements
+- You're implementing forms or inputs
+- You're adding animations or transitions
+- You're testing components
+- You want to ensure your work is inclusive and legally compliant
 
 ### [Testing Strategy](./testing/)
 
@@ -174,7 +204,7 @@ Guidelines for styling components with React Native StyleSheet.
 - Responsive design patterns
 - Platform-specific styles (iOS/Android/Web)
 - Dark mode support
-- Accessibility considerations
+- Accessibility considerations (see [Accessibility Guidelines](./accessibility.md) for details)
 - Complete examples
 
 **Read this if:**
@@ -184,9 +214,12 @@ Guidelines for styling components with React Native StyleSheet.
 - You're working on responsive layouts
 - You need platform-specific styles
 - You're implementing dark mode
-- You need to ensure accessibility
+
+**Important**: Always refer to [Accessibility Guidelines](./accessibility.md) when styling to ensure proper contrast ratios, touch target sizes, and focus indicators.
 
 ## Quick Start
+
+> **⚠️ Note**: All examples below assume you've reviewed [Accessibility Guidelines](./accessibility.md) and are implementing WCAG 2.1 AA compliant features.
 
 ### For Creating a New Feature
 
@@ -347,7 +380,13 @@ Guidelines for styling components with React Native StyleSheet.
 
 ### For Styling Components
 
-1. **Define Theme Variables** ([Styling Pattern](./styling-pattern.md))
+1. **Review Accessibility Requirements** ([Accessibility Guidelines](./accessibility.md))
+
+   - Ensure 4.5:1 contrast ratio for text
+   - Minimum 44x44 point touch targets
+   - Don't rely on color alone
+
+2. **Define Theme Variables** ([Styling Pattern](./styling-pattern.md))
 
    ```typescript
    export const theme = {
@@ -363,7 +402,7 @@ Guidelines for styling components with React Native StyleSheet.
    };
    ```
 
-2. **Create Component Styles** ([Styling Pattern](./styling-pattern.md))
+3. **Create Accessible Component Styles** ([Styling Pattern](./styling-pattern.md))
 
    ```typescript
    const styles = StyleSheet.create({
@@ -372,10 +411,14 @@ Guidelines for styling components with React Native StyleSheet.
        padding: theme.spacing.md,
        backgroundColor: theme.colors.background,
      },
+     button: {
+       minHeight: 44, // Minimum touch target
+       minWidth: 44,
+     },
    });
    ```
 
-3. **Apply Platform-Specific Styles** ([Styling Pattern](./styling-pattern.md))
+4. **Apply Platform-Specific Styles** ([Styling Pattern](./styling-pattern.md))
 
    ```typescript
    const styles = StyleSheet.create({
@@ -389,6 +432,23 @@ Guidelines for styling components with React Native StyleSheet.
    ```
 
 ## When to Use These Patterns
+
+### Accessibility Guidelines
+
+**Use always:**
+
+- Every component, screen, and interaction must be accessible
+- Not optional - required for all features
+- Must be considered at design phase, not as an afterthought
+
+**Key requirements:**
+
+- WCAG 2.1 Level AA compliance minimum
+- Test with VoiceOver (iOS) and TalkBack (Android)
+- Ensure keyboard navigation support
+- Provide proper labels for all interactive elements
+- Maintain sufficient color contrast
+- Use minimum touch target sizes (44x44 points)
 
 ### Context Pattern
 
@@ -449,6 +509,8 @@ Guidelines for styling components with React Native StyleSheet.
 - StyleSheet.create for performance
 - Theme constants for consistency
 - Platform-specific styles when needed
+- Accessible color combinations (see [Accessibility Guidelines](./accessibility.md))
+- Minimum touch target sizes (44x44 points)
 
 ### Testing Patterns
 
@@ -479,6 +541,11 @@ Guidelines for styling components with React Native StyleSheet.
 
 ## Examples by Use Case
 
+### I'm starting any new work
+
+1. Read: [Accessibility Guidelines](./accessibility.md) - Understand accessibility requirements
+2. Continue with specific use case below
+
 ### I'm building a new screen with data fetching
 
 1. Read: [Context Pattern](./context-pattern.md) - Set up state management
@@ -489,10 +556,11 @@ Guidelines for styling components with React Native StyleSheet.
 
 ### I'm creating reusable UI components
 
-1. Read: [Component Architecture](./component-architecture.md) - Component organization
-2. Read: [Types and Configuration](./types-and-configuration.md) - Define prop types
-3. Read: [Styling Pattern](./styling-pattern.md) - Apply consistent styling
-4. Read: [Testing Strategy](./testing/unit-testing.md) - Write component tests
+1. Read: [Accessibility Guidelines](./accessibility.md) - Ensure accessible design
+2. Read: [Component Architecture](./component-architecture.md) - Component organization
+3. Read: [Types and Configuration](./types-and-configuration.md) - Define prop types
+4. Read: [Styling Pattern](./styling-pattern.md) - Apply consistent styling
+5. Read: [Testing Strategy](./testing/unit-testing.md) - Write component tests including accessibility tests
 
 ### I'm implementing authentication flow
 
@@ -512,10 +580,11 @@ Guidelines for styling components with React Native StyleSheet.
 
 ### I'm implementing theme and dark mode support
 
-1. Read: [Styling Pattern](./styling-pattern.md) - Theme system setup
-2. Read: [Context Pattern](./context-pattern.md) - Theme context
-3. Read: [Component Architecture](./component-architecture.md) - Apply theme to components
-4. Read: [Testing Strategy](./testing/) - Test theme switching
+1. Read: [Accessibility Guidelines](./accessibility.md) - Ensure accessible colors in both themes
+2. Read: [Styling Pattern](./styling-pattern.md) - Theme system setup
+3. Read: [Context Pattern](./context-pattern.md) - Theme context
+4. Read: [Component Architecture](./component-architecture.md) - Apply theme to components
+5. Read: [Testing Strategy](./testing/) - Test theme switching and accessibility
 
 ### I'm writing tests for existing components
 
@@ -575,6 +644,7 @@ comprehend/
 │   └── [types].ts
 └── docs/                         # Design documentation
     ├── design-docs.md           # This file
+    ├── accessibility.md         # ⚠️ CRITICAL - Start here
     ├── context-pattern.md
     ├── component-architecture.md
     ├── navigation-pattern.md
@@ -596,15 +666,28 @@ comprehend/
 
 When adding new patterns or updating existing ones:
 
-1. **Follow the established structure** - Use the same format as existing documents
-2. **Include working examples** - Provide complete, runnable code examples
-3. **Add cross-references** - Link to related documentation
-4. **Update this overview** - Add new patterns to the table of contents
-5. **Keep it practical** - Focus on real-world use cases and scenarios
+1. **Verify accessibility compliance** - Ensure all examples meet WCAG 2.1 AA standards
+2. **Follow the established structure** - Use the same format as existing documents
+3. **Include working examples** - Provide complete, runnable code examples
+4. **Add cross-references** - Link to related documentation, especially [Accessibility Guidelines](./accessibility.md)
+5. **Update this overview** - Add new patterns to the table of contents
+6. **Keep it practical** - Focus on real-world use cases and scenarios
+
+**All code examples must**:
+
+- Include proper accessibility props
+- Use minimum touch target sizes (44x44 points)
+- Maintain accessible color contrast ratios
+- Support screen readers
 
 ## Getting Help
 
+- **For accessibility questions**: Start with [Accessibility Guidelines](./accessibility.md) - **Required reading for everyone**
 - **For testing questions**: Start with [Testing Summary](./testing/summary.md)
 - **For architecture questions**: Start with relevant pattern document
 - **For quick answers**: Check the [Quick Start](#quick-start) section
 - **For specific scenarios**: Check [Examples by Use Case](#examples-by-use-case)
+
+---
+
+**Remember**: Accessibility is not optional. Every feature, component, and screen must meet WCAG 2.1 AA standards. When in doubt, consult the [Accessibility Guidelines](./accessibility.md).

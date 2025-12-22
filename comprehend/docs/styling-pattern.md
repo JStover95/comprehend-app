@@ -12,7 +12,7 @@ This document describes styling patterns for React Native components using Style
 - [Responsive Design](#responsive-design)
 - [Platform-Specific Styles](#platform-specific-styles)
 - [Dark Mode Support](#dark-mode-support)
-- [Accessibility](#accessibility)
+- [Accessibility Considerations](#accessibility)
 - [Complete Examples](#complete-examples)
 
 ## StyleSheet Organization
@@ -641,80 +641,64 @@ export function MyComponent() {
 
 ## Accessibility
 
-@@ Highlight accessability in design docs as an always must-have
+**⚠️ CRITICAL: Accessibility is not optional** - All components must meet WCAG 2.1 AA standards minimum.
 
-### Accessible Colors
+### Key Requirements for Styled Components
 
-Ensure sufficient contrast ratios:
+When styling components, always ensure:
 
-```typescript
-// utils/accessibility.ts
+- **Color Contrast**: Minimum 4.5:1 for normal text, 3:1 for large text and UI components
+- **Touch Targets**: Minimum 44x44 points for all interactive elements
+- **Focus Indicators**: Clear visual feedback for focused states
+- **Don't Rely on Color Alone**: Use patterns, icons, or text in addition to color
 
-/**
- * Calculate relative luminance of a color
- */
-export function getLuminance(color: string): number {
-  // Implementation of WCAG 2.0 relative luminance formula
-  // ...
-}
-
-/**
- * Calculate contrast ratio between two colors
- */
-export function getContrastRatio(foreground: string, background: string): number {
-  const l1 = getLuminance(foreground);
-  const l2 = getLuminance(background);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-/**
- * Check if color combination meets WCAG AA standard
- */
-export function meetsWCAG_AA(foreground: string, background: string): boolean {
-  return getContrastRatio(foreground, background) >= 4.5;
-}
-```
-
-### Accessible Touch Targets
-
-Ensure minimum touch target sizes:
+### Example: Accessible Themed Button
 
 ```typescript
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { TOUCH_TARGET } from '@/constants/accessibility';
+
+export function ThemedButton({ title, onPress, disabled }: ButtonProps) {
+  const { colors } = useTheme();
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.button,
+        { backgroundColor: disabled ? colors.border : colors.primary }
+      ]}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled }}
+    >
+      <Text style={[styles.text, { color: '#FFFFFF' }]}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   button: {
-    minHeight: 44, // iOS minimum
-    minWidth: 44,
-    paddingHorizontal: 16,
+    minHeight: TOUCH_TARGET.RECOMMENDED_SIZE, // 48pt
+    paddingHorizontal: 24,
     paddingVertical: 12,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
+    borderRadius: 8,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 ```
 
-### Accessibility Props
-
-```typescript
-export function AccessibleButton({ title, onPress }: ButtonProps) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      accessible={true}
-      accessibilityLabel={title}
-      accessibilityRole="button"
-      accessibilityHint="Tap to perform action"
-    >
-      <Text>{title}</Text>
-    </TouchableOpacity>
-  );
-}
-```
+**For comprehensive accessibility guidelines**, see [Accessibility Guidelines](./accessibility.md).
 
 ## Complete Examples
 
@@ -822,13 +806,15 @@ const styles = StyleSheet.create({
 - ❌ Don't use inline styles for static styles
 - ❌ Don't hardcode colors (use theme)
 - ❌ Don't ignore dark mode
-- ❌ Don't create inaccessible color combinations
-- ❌ Don't use small touch targets
+- ❌ Don't create inaccessible color combinations (see [Accessibility](./accessibility.md))
+- ❌ Don't use small touch targets (minimum 44x44 points)
 - ❌ Don't assume fixed screen dimensions
 - ❌ Don't ignore platform differences
+- ❌ Don't rely on color alone to convey information
 
 ## Next Steps
 
+- Read [Accessibility Guidelines](./accessibility.md) for comprehensive accessibility requirements
 - Read [Component Architecture](./component-architecture.md) for component patterns
 - Read [Context Pattern](./context-pattern.md) for theme context
 - Read [Types and Configuration](./types-and-configuration.md) for theme types
