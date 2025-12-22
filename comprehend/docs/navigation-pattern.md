@@ -453,43 +453,9 @@ export default function RootLayout() {
 
 ## Navigation Testing
 
-@@ Move testing to testing docs
+For comprehensive guidance on testing navigation flows, including testing navigation between screens, tab navigation, and navigation with parameters, see:
 
-### Testing Navigation
-
-See [Integration Testing](./testing/integration-testing.md) for complete navigation testing patterns.
-
-```typescript
-// Basic navigation test
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-const Stack = createNativeStackNavigator();
-
-function TestNavigator() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Detail" component={DetailScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
-
-describe('Navigation', () => {
-  it('Should navigate to detail screen', async () => {
-    const { getByTestId } = render(<TestNavigator />);
-
-    fireEvent.press(getByTestId('nav-button'));
-
-    await waitFor(() => {
-      expect(getByTestId('detail-screen')).toBeTruthy();
-    });
-  });
-});
-```
+- **[Integration Testing Guide](./testing/integration-testing.md)** - Complete navigation testing patterns and examples
 
 ## Complete Examples
 
@@ -700,6 +666,6 @@ export default function HomeStack() {
 ## Next Steps
 
 - Read [Component Architecture](./component-architecture.md) for screen components
-- Read [Integration Testing](./testing/integration-testing.md) for navigation testing
 - Read [Context Pattern](./context-pattern.md) for auth-based navigation
+- Read [Integration Testing](./testing/integration-testing.md) for testing navigation flows
 - Explore [Expo Router Documentation](https://docs.expo.dev/router/introduction/)

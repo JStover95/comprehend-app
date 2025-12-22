@@ -56,7 +56,6 @@ Describes the Context API pattern used for state management across the applicati
 - Custom hooks for safe context access
 - Provider hierarchy and composition
 - Error handling and loading states
-- Context testing with mock providers
 - Complete working examples
 
 **Read this if:**
@@ -101,7 +100,6 @@ Guidelines for using Expo Router's file-based routing system.
 - Route parameters and search params
 - Nested navigation with layouts
 - Deep linking configuration
-- Navigation testing patterns
 - Complete examples
 
 **Read this if:**
@@ -123,7 +121,6 @@ Guidelines for integrating with the AWS backend API.
 - Error handling and retry logic
 - Authentication token management
 - Caching strategies
-- API client testing with mocks
 - Integration with contexts
 - Complete working example
 

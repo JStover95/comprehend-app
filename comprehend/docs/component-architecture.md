@@ -731,6 +731,10 @@ export function UserProfileScreen() {
 
 ## Test IDs
 
+Test IDs are implementation details that enable testing. They are added directly to components in JSX, similar to accessibility props. While they exist to support testing, defining and using them is part of component implementation.
+
+**For testing patterns and usage in tests**, see [Unit Testing Guide](./testing/unit-testing.md) and [Best Practices](./testing/best-practices.md).
+
 ### Defining Test IDs
 
 ```typescript
@@ -891,4 +895,4 @@ export function DataList({ items }: DataListProps) {
 - Read [Context Pattern](./context-pattern.md) for state management
 - Read [Navigation Pattern](./navigation-pattern.md) for screen navigation
 - Read [Styling Pattern](./styling-pattern.md) for styling guidelines
-- Read [Testing Strategy](./testing/) for component testing
+- Read [Testing Strategy](./testing/summary.md) for testing components and hooks
