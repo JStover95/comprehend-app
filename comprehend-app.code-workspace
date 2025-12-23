@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "comprehend",
+			"path": "comprehend"
+		},
+		{
+			"name": "cdk",
+			"path": "cdk"
+		}
+	],
+	"settings": {
+		"jest.disabledWorkspaceFolders": [
+			"comprehend-app"
+		]
+	}
+}
