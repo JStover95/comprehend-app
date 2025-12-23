@@ -1,17 +1,45 @@
-// import * as cdk from 'aws-cdk-lib/core';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as Cdk from '../lib/cdk-stack';
+import * as cdk from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+import { ComprehendStack } from '../lib/stacks/comprehend-stack';
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/cdk-stack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new Cdk.CdkStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+describe('CDK App', () => {
+  test('ComprehendStack synthesizes successfully', () => {
+    const app = new cdk.App();
+    
+    // Create stack with dev environment
+    const stack = new ComprehendStack(app, 'TestStack', {
+      environmentName: 'dev',
+    });
+    
+    // Verify stack synthesizes without errors
+    const template = Template.fromStack(stack);
+    
+    // Verify VPC is created
+    template.hasResourceProperties('AWS::EC2::VPC', {
+      CidrBlock: '10.0.0.0/16',
+    });
+    
+    // Verify subnets are created
+    template.resourceCountIs('AWS::EC2::Subnet', 4); // 2 public + 2 private for dev
+  });
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+  test('ComprehendStack creates correct outputs', () => {
+    const app = new cdk.App();
+    
+    const stack = new ComprehendStack(app, 'TestStack', {
+      environmentName: 'dev',
+    });
+    
+    const template = Template.fromStack(stack);
+    const outputs = template.findOutputs('*');
+    
+    // Verify all required outputs exist
+    expect(outputs.VpcId).toBeDefined();
+    expect(outputs.PublicSubnetIds).toBeDefined();
+    expect(outputs.PrivateSubnetIds).toBeDefined();
+    expect(outputs.AvailabilityZones).toBeDefined();
+    expect(outputs.NatGatewayIps).toBeDefined();
+    expect(outputs.EnvironmentName).toBeDefined();
+    expect(outputs.VpcCidr).toBeDefined();
+  });
 });
