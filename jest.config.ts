@@ -7,6 +7,7 @@ const config: Config.InitialOptions = {
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest",
   },
+  maxWorkers: 1,
   projects: [
     {
       testEnvironment: "node",
