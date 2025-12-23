@@ -75,6 +75,19 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
+### Accessibility Requirements (for `comprehend/` UI features)
+
+<!--
+  Per Constitution Principle II: Accessibility-First
+  Required for all user-facing features. Reference: comprehend/docs/accessibility.md
+-->
+
+- **Screen Reader**: How will VoiceOver/TalkBack users navigate this feature?
+- **Touch Targets**: All interactive elements ≥ 44x44 points
+- **Color Contrast**: Text meets 4.5:1 ratio, UI components meet 3:1
+- **Keyboard**: Feature fully operable without touch
+- **Focus Order**: Logical focus sequence defined
+
 ## Requirements *(mandatory)*
 
 <!--

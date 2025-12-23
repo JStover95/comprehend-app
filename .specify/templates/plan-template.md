@@ -31,7 +31,18 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| Principle | Compliance | Notes |
+|-----------|------------|-------|
+| I. Testing-First | ☐ Pending | Test strategy defined in Technical Context |
+| II. Accessibility-First | ☐ N/A or Pending | Required for `comprehend/` UI features |
+| III. Modular Architecture | ☐ Pending | Agent/Context patterns followed |
+| IV. Design Doc Adherence | ☐ Pending | Relevant docs identified and reviewed |
+| V. Type Safety | ☐ Pending | Strict TypeScript enabled |
+
+**Design Docs to Review:**
+
+- Backend (`cdk/`): [List applicable docs from `cdk/docs/`]
+- Frontend (`comprehend/`): [List applicable docs from `comprehend/docs/`]
 
 ## Project Structure
 
