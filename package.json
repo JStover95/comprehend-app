@@ -1,18 +1,17 @@
 {
-  "name": "comprehend-app",
-  "version": "1.0.0",
-  "private": true,
-  "workspaces": [
-    "cdk",
-    "comprehend"
-  ],
   "scripts": {
-    "test": "npm run test --workspaces --if-present",
-    "test:cdk": "npm run test --workspace=cdk",
-    "test:comprehend": "npm run test --workspace=comprehend",
-    "install:all": "npm install",
-    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
-  "devDependencies": {},
-  "description": "Monorepo for Comprehend app - includes CDK infrastructure and React Native mobile app"
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "jest-expo": "~54.0.16",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "expo": "^54.0.30"
+  }
 }

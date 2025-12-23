@@ -39,8 +39,6 @@
   "editor.rulers": [80, 120],
   "editor.tabSize": 2,
 
-  "jest.jestCommandLine": "npm test --",
   "jest.runMode": "on-demand",
-  "jest.rootPath": ".",
   "jest.autoRun": "off"
 }
