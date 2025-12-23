@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://comprehend-app.io/schemas/stack-outputs.json",
+  "title": "Comprehend Base Stack Outputs",
+  "description": "Schema defining the CloudFormation outputs exported by the base CDK stack for consumption by dependent stacks",
+  "type": "object",
+  "required": [
+    "vpcId",
+    "publicSubnetIds",
+    "privateSubnetIds",
+    "availabilityZones",
+    "environmentName",
+    "vpcCidr"
+  ],
+  "properties": {
+    "vpcId": {
+      "type": "string",
+      "pattern": "^vpc-[a-f0-9]{8,17}$",
+      "description": "VPC identifier for dependent stacks to reference",
+      "examples": ["vpc-0123456789abcdef0"]
+    },
+    "publicSubnetIds": {
+      "type": "string",
+      "description": "Comma-separated list of public subnet IDs",
+      "pattern": "^subnet-[a-f0-9]{8,17}(,subnet-[a-f0-9]{8,17})*$",
+      "examples": [
+        "subnet-0123456789abcdef0,subnet-0123456789abcdef1"
+      ]
+    },
+    "privateSubnetIds": {
+      "type": "string",
+      "description": "Comma-separated list of private subnet IDs",
+      "pattern": "^subnet-[a-f0-9]{8,17}(,subnet-[a-f0-9]{8,17})*$",
+      "examples": [
+        "subnet-0123456789abcdef2,subnet-0123456789abcdef3"
+      ]
+    },
+    "availabilityZones": {
+      "type": "string",
+      "description": "Comma-separated list of availability zones used",
+      "pattern": "^[a-z]{2}-[a-z]+-\\d[a-z](,[a-z]{2}-[a-z]+-\\d[a-z])*$",
+      "examples": [
+        "us-east-1a,us-east-1b",
+        "us-west-2a,us-west-2b,us-west-2c"
+      ]
+    },
+    "natGatewayIps": {
+      "type": "string",
+      "description": "Comma-separated list of NAT gateway Elastic IP addresses. Empty string if NAT gateways disabled.",
+      "pattern": "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(,\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})*)?$",
+      "examples": [
+        "52.1.2.3,52.1.2.4",
+        ""
+      ]
+    },
+    "environmentName": {
+      "type": "string",
+      "enum": ["dev", "staging", "prod"],
+      "description": "Environment identifier"
+    },
+    "vpcCidr": {
+      "type": "string",
+      "pattern": "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\\/([1-2]?[0-9]|3[0-2])$",
+      "description": "VPC CIDR block",
+      "examples": ["10.0.0.0/16"]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "vpcId": "vpc-0123456789abcdef0",
+      "publicSubnetIds": "subnet-0a1b2c3d4e5f6a7b8,subnet-0a1b2c3d4e5f6a7b9",
+      "privateSubnetIds": "subnet-0a1b2c3d4e5f6a7c0,subnet-0a1b2c3d4e5f6a7c1",
+      "availabilityZones": "us-east-1a,us-east-1b",
+      "natGatewayIps": "52.1.2.3,52.1.2.4",
+      "environmentName": "prod",
+      "vpcCidr": "10.2.0.0/16"
+    },
+    {
+      "vpcId": "vpc-0987654321fedcba0",
+      "publicSubnetIds": "subnet-0a1b2c3d4e5f6a7b8,subnet-0a1b2c3d4e5f6a7b9",
+      "privateSubnetIds": "subnet-0a1b2c3d4e5f6a7c0,subnet-0a1b2c3d4e5f6a7c1",
+      "availabilityZones": "us-west-2a,us-west-2b",
+      "natGatewayIps": "",
+      "environmentName": "dev",
+      "vpcCidr": "10.0.0.0/16"
+    }
+  ],
+  "exportNames": {
+    "description": "CloudFormation export names for each output (pattern: {environment}-{OutputName})",
+    "vpcId": "{environment}-VpcId",
+    "publicSubnetIds": "{environment}-PublicSubnetIds",
+    "privateSubnetIds": "{environment}-PrivateSubnetIds",
+    "availabilityZones": "{environment}-AvailabilityZones",
+    "natGatewayIps": "{environment}-NatGatewayIps",
+    "environmentName": "{environment}-EnvironmentName",
+    "vpcCidr": "{environment}-VpcCidr"
+  },
+  "usageExamples": {
+    "typescript": {
+      "description": "Import outputs in a dependent CDK stack",
+      "code": "import * as cdk from 'aws-cdk-lib';\nimport * as ec2 from 'aws-cdk-lib/aws-ec2';\n\n// Import VPC ID\nconst vpcId = cdk.Fn.importValue('dev-VpcId');\n\n// Lookup VPC\nconst vpc = ec2.Vpc.fromLookup(this, 'ImportedVpc', {\n  vpcId: vpcId\n});\n\n// Import private subnet IDs\nconst privateSubnetIdsString = cdk.Fn.importValue('dev-PrivateSubnetIds');\nconst privateSubnetIds = cdk.Fn.split(',', privateSubnetIdsString);\n\n// Use in Lambda function\nconst lambda = new lambda.Function(this, 'MyFunction', {\n  // ... other props\n  vpc: vpc,\n  vpcSubnets: {\n    subnets: privateSubnetIds.map((id, index) => \n      ec2.Subnet.fromSubnetId(this, `PrivateSubnet${index}`, id)\n    )\n  }\n});"
+    },
+    "cli": {
+      "description": "Query outputs via AWS CLI",
+      "code": "# List all exports\naws cloudformation list-exports --query 'Exports[?starts_with(Name, `dev-`)].{Name:Name,Value:Value}' --output table\n\n# Get specific output\naws cloudformation list-exports --query 'Exports[?Name==`dev-VpcId`].Value' --output text"
+    }
+  }
+}
+

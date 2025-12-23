@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://comprehend-app.io/schemas/environment-config.json",
+  "title": "Comprehend Environment Configuration",
+  "description": "Schema for environment-specific infrastructure configuration in the Comprehend CDK stack",
+  "type": "object",
+  "required": ["name", "vpcCidr", "maxAzs", "enableNatGateways", "tags"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "enum": ["dev", "staging", "prod"],
+      "description": "Environment identifier used in resource naming and tagging"
+    },
+    "vpcCidr": {
+      "type": "string",
+      "pattern": "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\\/([1-2]?[0-9]|3[0-2])$",
+      "description": "VPC CIDR block in IPv4 notation (e.g., '10.0.0.0/16'). Must be from RFC 1918 private ranges.",
+      "examples": [
+        "10.0.0.0/16",
+        "10.1.0.0/16",
+        "10.2.0.0/16",
+        "172.16.0.0/16",
+        "192.168.0.0/16"
+      ]
+    },
+    "maxAzs": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 3,
+      "description": "Maximum number of availability zones to use. Must be at least 2 for high availability.",
+      "default": 2
+    },
+    "enableNatGateways": {
+      "type": "boolean",
+      "description": "Whether to create NAT gateways for private subnet internet access. Recommended false for dev, true for staging/prod.",
+      "default": true
+    },
+    "natGateways": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Number of NAT gateways to create. Typically equals maxAzs for high availability. Ignored if enableNatGateways is false."
+    },
+    "tags": {
+      "type": "object",
+      "description": "Resource tags for cost tracking and management. Applied to all resources in the stack.",
+      "required": ["Application", "Environment", "ManagedBy"],
+      "properties": {
+        "Application": {
+          "type": "string",
+          "const": "Comprehend",
+          "description": "Application name"
+        },
+        "Environment": {
+          "type": "string",
+          "enum": ["dev", "staging", "prod"],
+          "description": "Environment identifier (must match config.name)"
+        },
+        "ManagedBy": {
+          "type": "string",
+          "const": "CDK",
+          "description": "Management tool identifier"
+        },
+        "CostCenter": {
+          "type": "string",
+          "description": "Cost center for billing allocation",
+          "examples": ["Development", "Staging", "Production"]
+        },
+        "Owner": {
+          "type": "string",
+          "description": "Team or individual responsible for the resources",
+          "examples": ["Backend Team", "DevOps"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "accountId": {
+      "type": "string",
+      "pattern": "^\\d{12}$",
+      "description": "AWS account ID (12 digits). Optional, used for stack targeting and validation."
+    },
+    "region": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[a-z]+-\\d{1}$",
+      "description": "AWS region identifier (e.g., 'us-east-1', 'eu-west-2'). Optional, defaults to CDK_DEFAULT_REGION.",
+      "examples": [
+        "us-east-1",
+        "us-west-2",
+        "eu-west-1",
+        "ap-southeast-1"
+      ]
+    },
+    "enableFlowLogs": {
+      "type": "boolean",
+      "description": "Enable VPC Flow Logs for network traffic monitoring. Future enhancement.",
+      "default": false
+    },
+    "enableVpcEndpoints": {
+      "type": "boolean",
+      "description": "Enable VPC endpoints for AWS services (S3, DynamoDB, etc.). Future enhancement.",
+      "default": false
+    }
+  },
+  "examples": [
+    {
+      "name": "dev",
+      "vpcCidr": "10.0.0.0/16",
+      "maxAzs": 2,
+      "enableNatGateways": false,
+      "tags": {
+        "Application": "Comprehend",
+        "Environment": "dev",
+        "ManagedBy": "CDK",
+        "CostCenter": "Development",
+        "Owner": "Backend Team"
+      }
+    },
+    {
+      "name": "staging",
+      "vpcCidr": "10.1.0.0/16",
+      "maxAzs": 2,
+      "enableNatGateways": true,
+      "natGateways": 2,
+      "tags": {
+        "Application": "Comprehend",
+        "Environment": "staging",
+        "ManagedBy": "CDK",
+        "CostCenter": "Staging",
+        "Owner": "Backend Team"
+      },
+      "accountId": "123456789012",
+      "region": "us-east-1"
+    },
+    {
+      "name": "prod",
+      "vpcCidr": "10.2.0.0/16",
+      "maxAzs": 3,
+      "enableNatGateways": true,
+      "natGateways": 3,
+      "tags": {
+        "Application": "Comprehend",
+        "Environment": "prod",
+        "ManagedBy": "CDK",
+        "CostCenter": "Production",
+        "Owner": "Backend Team"
+      },
+      "accountId": "123456789012",
+      "region": "us-east-1"
+    }
+  ],
+  "definitions": {
+    "rfc1918PrivateRange": {
+      "description": "RFC 1918 private IP address ranges",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^10\\.((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){2}\\/([8-9]|1[0-9]|2[0-4])$",
+          "description": "10.0.0.0/8 range"
+        },
+        {
+          "type": "string",
+          "pattern": "^172\\.(1[6-9]|2[0-9]|3[0-1])\\.((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){1}\\/([1-2][0-4])$",
+          "description": "172.16.0.0/12 range"
+        },
+        {
+          "type": "string",
+          "pattern": "^192\\.168\\.((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){1}\\/([1-2][0-4])$",
+          "description": "192.168.0.0/16 range"
+        }
+      ]
+    }
+  }
+}
+
