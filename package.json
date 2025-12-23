@@ -1,0 +1,18 @@
+{
+  "name": "comprehend-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "cdk",
+    "comprehend"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "test:cdk": "npm run test --workspace=cdk",
+    "test:comprehend": "npm run test --workspace=comprehend",
+    "install:all": "npm install",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
+  },
+  "devDependencies": {},
+  "description": "Monorepo for Comprehend app - includes CDK infrastructure and React Native mobile app"
+}
