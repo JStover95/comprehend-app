@@ -187,8 +187,11 @@ export class VpcConstruct extends Construct {
 
   /**
    * Get NAT gateway IPs as comma-separated string
+   * Returns "disabled" when NAT gateways are not enabled
    */
   public getNatGatewayIpsString(): string {
-    return this.natGatewayIps.join(",");
+    return this.natGatewayIps.length > 0
+      ? this.natGatewayIps.join(",")
+      : "disabled";
   }
 }
