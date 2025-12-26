@@ -39,6 +39,7 @@ describe('CDK App', () => {
     expect(outputs.PrivateSubnetIds).toBeDefined();
     expect(outputs.AvailabilityZones).toBeDefined();
     expect(outputs.NatGatewayIps).toBeDefined();
+    expect(outputs.NatGatewayIps.Value).toBe("disabled"); // Verify placeholder value
     expect(outputs.EnvironmentName).toBeDefined();
     expect(outputs.VpcCidr).toBeDefined();
   });

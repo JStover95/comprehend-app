@@ -309,6 +309,20 @@ describe("ComprehendStack", () => {
       expect(outputs.NatGatewayIps.Export?.Name).toBe("prod-NatGatewayIps");
     });
 
+    it("exports 'disabled' for NAT gateway IPs when NAT gateways disabled", () => {
+      // Arrange & Act
+      const stack = new ComprehendStack(app, "TestStack", {
+        environmentName: "dev",
+      });
+      const template = Template.fromStack(stack);
+
+      // Assert
+      const outputs = template.findOutputs("*");
+      expect(outputs.NatGatewayIps).toBeDefined();
+      expect(outputs.NatGatewayIps.Export?.Name).toBe("dev-NatGatewayIps");
+      expect(outputs.NatGatewayIps.Value).toBe("disabled");
+    });
+
     it("exports environment name", () => {
       // Arrange & Act
       const stack = new ComprehendStack(app, "TestStack", {

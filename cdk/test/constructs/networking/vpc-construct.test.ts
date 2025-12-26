@@ -348,6 +348,20 @@ describe("VpcConstruct", () => {
       expect(construct.natGatewayIps.length).toBe(2); // Matches prodConfig natGateways: 2
     });
 
+    it("returns comma-separated IPs string when NAT gateways enabled", () => {
+      // Arrange & Act
+      const construct = new VpcConstruct(stack, "TestVpc", {
+        environmentConfig: prodConfig,
+      });
+
+      // Assert
+      const result = construct.getNatGatewayIpsString();
+      expect(result).toBeDefined();
+      expect(result).not.toBe("disabled");
+      // Note: Actual IP values are placeholders in current implementation
+      expect(result.split(",").length).toBe(2);
+    });
+
     it("returns empty array for NAT gateway IPs when disabled", () => {
       // Arrange & Act
       const construct = new VpcConstruct(stack, "TestVpc", {
@@ -357,6 +371,16 @@ describe("VpcConstruct", () => {
       // Assert
       expect(construct.natGatewayIps).toBeDefined();
       expect(construct.natGatewayIps.length).toBe(0);
+    });
+
+    it("returns 'disabled' string for NAT gateway IPs when disabled", () => {
+      // Arrange & Act
+      const construct = new VpcConstruct(stack, "TestVpc", {
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      expect(construct.getNatGatewayIpsString()).toBe("disabled");
     });
   });
 });
