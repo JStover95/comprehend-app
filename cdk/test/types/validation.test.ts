@@ -273,4 +273,88 @@ describe("validateEnvironmentConfig", () => {
       expect(errors.length).toBeGreaterThanOrEqual(5); // name, vpcCidr, maxAzs, 3 tags
     });
   });
+
+  describe("edge cases", () => {
+    it("should accept CIDR with /8 netmask (largest private range)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "10.0.0.0/8",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should accept CIDR with /32 netmask (single IP)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "10.0.0.1/32",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should accept CIDR at 172.16.0.0/12 boundary (start)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "172.16.0.0/16",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should accept CIDR at 172.31.255.255/12 boundary (end)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "172.31.255.0/24",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should reject CIDR just outside 172.16.0.0/12 range (172.15.x.x)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "172.15.0.0/16",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors.some((e) => e.field === "vpcCidr")).toBe(true);
+    });
+
+    it("should reject CIDR just outside 172.16.0.0/12 range (172.32.x.x)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "172.32.0.0/16",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors.some((e) => e.field === "vpcCidr")).toBe(true);
+    });
+
+    it("should reject CIDR with no netmask", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "10.0.0.0",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors.some((e) => e.field === "vpcCidr")).toBe(true);
+    });
+
+    it("should reject CIDR with invalid netmask (>32)", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "10.0.0.0/33",
+      };
+      const errors = validateEnvironmentConfig(config);
+      expect(errors.some((e) => e.field === "vpcCidr")).toBe(true);
+    });
+
+    it("should reject CIDR with leading zeros in octets", () => {
+      const config: EnvironmentConfig = {
+        ...validConfig,
+        vpcCidr: "010.000.000.000/16",
+      };
+      const errors = validateEnvironmentConfig(config);
+      // This should be rejected as it's not a standard format
+      expect(errors.some((e) => e.field === "vpcCidr")).toBe(true);
+    });
+  });
 });

@@ -361,4 +361,77 @@ describe("ComprehendStack", () => {
       expect(outputs.VpcCidr.Export?.Name).toBe("staging-VpcCidr");
     });
   });
+
+  describe("Edge cases", () => {
+    it("handles region with only 2 AZs when maxAzs is 3", () => {
+      // Arrange & Act
+      // In test environment, CDK will limit to available AZs even if maxAzs is higher
+      const stack = new ComprehendStack(app, "TestStack", {
+        environmentName: "prod", // prod config has maxAzs: 3
+      });
+      const template = Template.fromStack(stack);
+
+      // Assert - Should gracefully handle fewer available AZs
+      // VPC should still be created successfully
+      template.hasResourceProperties("AWS::EC2::VPC", {
+        CidrBlock: "10.2.0.0/16",
+      });
+
+      // Subnets should be created (CDK will use available AZs)
+      const resources = template.toJSON().Resources;
+      const subnetCount = Object.keys(resources).filter(
+        (key) => resources[key].Type === "AWS::EC2::Subnet",
+      ).length;
+
+      // Should have at least 2 AZs worth of subnets (2 public + 2 private = 4)
+      expect(subnetCount).toBeGreaterThanOrEqual(4);
+    });
+
+    it("handles configuration with maxAzs at minimum boundary (2)", () => {
+      // Arrange
+      const minAzConfig: EnvironmentConfig = {
+        name: "dev",
+        vpcCidr: "10.10.0.0/16",
+        maxAzs: 2, // Minimum allowed
+        enableNatGateways: false,
+        tags: {
+          Application: "Comprehend",
+          Environment: "dev",
+          ManagedBy: "CDK",
+        },
+      };
+
+      // Act
+      const stack = new ComprehendStack(app, "TestStack", {
+        environmentConfig: minAzConfig,
+      });
+      const template = Template.fromStack(stack);
+
+      // Assert - Should create exactly 2 AZs worth of subnets
+      template.resourceCountIs("AWS::EC2::Subnet", 4); // 2 public + 2 private
+    });
+
+    it("handles configuration with maxAzs at maximum boundary (3)", () => {
+      // Arrange
+      const maxAzConfig: EnvironmentConfig = {
+        name: "prod",
+        vpcCidr: "10.20.0.0/16",
+        maxAzs: 3, // Maximum allowed
+        enableNatGateways: true,
+        tags: {
+          Application: "Comprehend",
+          Environment: "prod",
+          ManagedBy: "CDK",
+        },
+      };
+
+      // Act
+      const stack = new ComprehendStack(app, "TestStack", {
+        environmentConfig: maxAzConfig,
+      });
+
+      // Assert - Should not throw
+      expect(stack.environmentConfig.maxAzs).toBe(3);
+    });
+  });
 });
