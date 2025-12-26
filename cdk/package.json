@@ -7,9 +7,15 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "cdk": "cdk"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --collectCoverageFrom='lib/**/*.ts'",
+    "cdk": "cdk",
+    "lint": "eslint lib test --ext .ts",
+    "format": "prettier --write 'lib/**/*.ts' 'test/**/*.ts'"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^24.10.1",
     "aws-cdk": "2.1100.1",
@@ -18,7 +24,8 @@
     "prettier": "3.7.4",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.50.1"
   },
   "dependencies": {
     "aws-cdk-lib": "2.232.1",
