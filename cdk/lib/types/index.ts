@@ -213,14 +213,40 @@ export interface ValidationError {
  * @returns true if valid, false otherwise
  */
 export function validateCidr(cidr: string): boolean {
-  // RFC 1918 private ranges
+  // First check if the format matches RFC 1918 private ranges
   const privateRanges = [
     /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/, // 10.0.0.0/8
     /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}\/\d{1,2}$/, // 172.16.0.0/12
     /^192\.168\.\d{1,3}\.\d{1,3}\/\d{1,2}$/, // 192.168.0.0/16
   ];
 
-  return privateRanges.some((pattern) => pattern.test(cidr));
+  const matchesPrivateRange = privateRanges.some((pattern) =>
+    pattern.test(cidr),
+  );
+  if (!matchesPrivateRange) {
+    return false;
+  }
+
+  // Validate netmask is between 0 and 32
+  const parts = cidr.split("/");
+  if (parts.length !== 2) {
+    return false;
+  }
+  const netmask = parseInt(parts[1], 10);
+  if (isNaN(netmask) || netmask < 0 || netmask > 32) {
+    return false;
+  }
+
+  // Validate each octet is between 0 and 255
+  const octets = parts[0].split(".");
+  for (const octet of octets) {
+    const num = parseInt(octet, 10);
+    if (isNaN(num) || num < 0 || num > 255) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
