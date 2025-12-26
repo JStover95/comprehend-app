@@ -37,7 +37,7 @@ graph LR
 ### Key Components
 
 | Component | Technology | Location |
-|-----------|------------|----------|
+| ----------- | ------------ | ---------- |
 | Client | React Native (Expo) | `comprehend/` |
 | API | AWS Lambda + API Gateway | `cdk/lib/lambda/api/` |
 | ReaderAgent | AWS Bedrock (Claude) | `cdk/lib/lambda/agent/` |
@@ -87,7 +87,7 @@ A unit of work is complete when:
 **Location**: `cdk/lib/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 0.1.1 | Create base stack with environment configuration | None | Stack synthesis test |
 | 0.1.2 | Set up VPC construct with public/private subnets | 0.1.1 | VPC configuration tests |
 | 0.1.3 | Set up shared types and interfaces | 0.1.1 | Type compilation |
@@ -110,7 +110,7 @@ cdk/lib/
 **Location**: `cdk/lib/constructs/database/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 0.2.1 | Create RDS Aurora PostgreSQL cluster construct | 0.1.2 | Cluster configuration test |
 | 0.2.2 | Create database credentials in Secrets Manager | 0.2.1 | Secret creation test |
 | 0.2.3 | Create database bootstrap Lambda (schema creation) | 0.2.1, 0.2.2 | Unit + integration tests |
@@ -122,7 +122,7 @@ cdk/lib/
 **Location**: `comprehend/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 0.3.1 | Set up theme system with accessible colors | None | Theme unit tests |
 | 0.3.2 | Create base component library (Button, Input, Text) | 0.3.1 | Component unit tests |
 | 0.3.3 | Set up navigation structure with file-based routing | 0.3.2 | Navigation tests |
@@ -158,7 +158,7 @@ comprehend/
 **Location**: `cdk/lib/constructs/auth/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 1.1.1 | Create Cognito User Pool construct | 0.1.1 | User Pool configuration test |
 | 1.1.2 | Create User Pool Client with appropriate scopes | 1.1.1 | Client configuration test |
 | 1.1.3 | Export User Pool outputs for client consumption | 1.1.2 | Output validation test |
@@ -168,7 +168,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/users/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 1.2.1 | Create POST /users handler (create user in DB) | 0.2.3, 1.1.1 | Unit + integration tests |
 | 1.2.2 | Create DELETE /users/{id} handler | 1.2.1 | Unit + integration tests |
 | 1.2.3 | Create user provider for database operations | 0.2.3 | Provider unit tests |
@@ -193,7 +193,7 @@ cdk/lib/lambda/api/users/
 **Location**: `comprehend/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 1.3.1 | Create auth service (signup, signin, signout) | 0.3.4 | Service unit tests |
 | 1.3.2 | Create secure token storage with SecureStore | 1.3.1 | Storage unit tests |
 | 1.3.3 | Create session management service | 1.3.1, 1.3.2 | Session unit tests |
@@ -236,7 +236,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 2.1.1 | Create exercise types and interfaces | 0.2.3 | Type compilation |
 | 2.1.2 | Create exercise provider (CRUD operations) | 2.1.1, 0.2.3 | Provider unit tests |
 | 2.1.3 | Create exercise validator | 2.1.1 | Validator unit tests |
@@ -246,7 +246,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 2.2.1 | Create token types and interfaces | 2.1.1 | Type compilation |
 | 2.2.2 | Create token provider (CRUD operations) | 2.2.1, 0.2.3 | Provider unit tests |
 
@@ -255,7 +255,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 2.3.1 | Create vocab types and interfaces | 2.1.1, 2.2.1 | Type compilation |
 | 2.3.2 | Create vocab provider (CRUD with join table) | 2.3.1, 0.2.3 | Provider unit tests |
 | 2.3.3 | Create vocab-token relationship handler | 2.2.2, 2.3.2 | Relationship tests |
@@ -265,7 +265,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 2.4.1 | Create chat message types and interfaces | 2.1.1 | Type compilation |
 | 2.4.2 | Create chat message provider | 2.4.1, 0.2.3 | Provider unit tests |
 
@@ -278,7 +278,7 @@ comprehend/
 **Location**: `cdk/lib/constructs/api/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 3.1.1 | Create API Gateway REST API construct | 0.1.1, 1.1.1 | API configuration test |
 | 3.1.2 | Configure Cognito authorizer | 3.1.1, 1.1.2 | Authorizer test |
 | 3.1.3 | Create API response utilities | 3.1.1 | Utility tests |
@@ -288,7 +288,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 3.2.1 | Create POST /exercises handler (create) | 3.1.2, 2.1.2 | Unit + integration tests |
 | 3.2.2 | Create GET /exercises handler (list with query) | 3.1.2, 2.1.2 | Unit + integration tests |
 | 3.2.3 | Create GET /exercises/{id} handler (with includes) | 3.1.2, 2.1.2, 2.2.2, 2.3.2, 2.4.2 | Unit + integration tests |
@@ -300,7 +300,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/vocab/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 3.3.1 | Create POST /exercises/{id}/vocab handler | 3.1.2, 2.3.2 | Unit + integration tests |
 | 3.3.2 | Create GET /exercises/{id}/vocab handler | 3.1.2, 2.3.2 | Unit + integration tests |
 | 3.3.3 | Create PATCH /exercises/{id}/vocab/{vocabId} handler | 3.1.2, 2.3.2 | Unit + integration tests |
@@ -310,7 +310,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/messages/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 3.4.1 | Create POST /exercises/{id}/messages handler | 3.1.2, 2.4.2 | Unit + integration tests |
 
 ### 3.5 Client API Integration
@@ -318,7 +318,7 @@ comprehend/
 **Location**: `comprehend/utils/api/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 3.5.1 | Create base API client with Bearer token auth | 1.3.3 | Client unit tests |
 | 3.5.2 | Create error handling utilities | 3.5.1 | Error handling tests |
 | 3.5.3 | Create retry logic with exponential backoff | 3.5.1 | Retry logic tests |
@@ -349,7 +349,7 @@ comprehend/utils/api/
 **Location**: `comprehend/contexts/ExerciseContext/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 4.1.1 | Create ExerciseContext with state and actions | 3.5.4 | Context unit tests |
 | 4.1.2 | Create current exercise state management | 4.1.1 | State management tests |
 | 4.1.3 | Create exercise persistence (last accessed) | 4.1.1, 3.5.4 | Persistence tests |
@@ -359,7 +359,7 @@ comprehend/utils/api/
 **Location**: `comprehend/components/reader/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 4.2.1 | Create Token component (tappable word) | 0.3.2 | Component + a11y tests |
 | 4.2.2 | Create TokenizedContent component | 4.2.1 | Component + a11y tests |
 | 4.2.3 | Create token tap handler with highlight state | 4.2.2 | Interaction tests |
@@ -369,7 +369,7 @@ comprehend/utils/api/
 **Location**: `comprehend/app/(tabs)/reader.tsx`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 4.3.1 | Create Reader screen layout | 4.2.2, 0.3.2 | Screen + a11y tests |
 | 4.3.2 | Create title editing functionality | 4.3.1, 4.1.1 | Edit functionality tests |
 | 4.3.3 | Create content editing functionality | 4.3.1, 4.1.1 | Edit functionality tests |
@@ -380,7 +380,7 @@ comprehend/utils/api/
 **Location**: `comprehend/components/reader/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 4.4.1 | Create PasteContent modal/screen | 0.3.2 | Component + a11y tests |
 | 4.4.2 | Create content confirmation flow | 4.4.1, 4.1.1 | Flow tests |
 
@@ -413,7 +413,7 @@ comprehend/
 **Location**: `cdk/lib/constructs/agent/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 5.1.1 | Create Bedrock model access configuration | 0.1.1 | Configuration test |
 | 5.1.2 | Create agent Lambda with Bedrock client | 5.1.1 | Lambda configuration test |
 
@@ -422,7 +422,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/agent/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 5.2.1 | Create ReaderAgent types (request/response) | 5.1.2 | Type compilation |
 | 5.2.2 | Create prompt templates for content generation | 5.2.1 | Template unit tests |
 | 5.2.3 | Create prompt templates for vocab analysis | 5.2.1 | Template unit tests |
@@ -436,7 +436,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/agent/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 5.3.1 | Create POST /exercises/{id}/messages handler integration | 5.2.7, 3.4.1 | Unit + integration tests |
 | 5.3.2 | Implement response type routing (message/content/vocab) | 5.3.1 | Routing tests |
 
@@ -445,7 +445,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/agent/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 5.4.1 | Create tokenization prompt template | 5.2.1 | Template tests |
 | 5.4.2 | Create tokenization service | 5.4.1, 5.2.5 | Service unit tests |
 | 5.4.3 | Integrate tokenization with content paste flow | 5.4.2, 3.2.1 | Integration tests |
@@ -476,7 +476,7 @@ cdk/lib/lambda/agent/
 **Location**: `comprehend/contexts/VocabContext/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 6.1.1 | Create VocabContext with state and actions | 3.5.5 | Context unit tests |
 | 6.1.2 | Create vocab ordering logic (by first appearance) | 6.1.1 | Ordering tests |
 | 6.1.3 | Create duplicate vocab detection | 6.1.1 | Detection tests |
@@ -486,7 +486,7 @@ cdk/lib/lambda/agent/
 **Location**: `comprehend/components/vocab/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 6.2.1 | Create VocabCard component | 0.3.2 | Component + a11y tests |
 | 6.2.2 | Create VocabList component | 6.2.1, 6.1.1 | Component + a11y tests |
 | 6.2.3 | Create VocabDetail modal/screen | 6.2.1, 6.1.1 | Component + a11y tests |
@@ -498,7 +498,7 @@ cdk/lib/lambda/agent/
 **Location**: `comprehend/app/(tabs)/vocab.tsx`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 6.3.1 | Create Vocab screen layout | 6.2.2 | Screen + a11y tests |
 | 6.3.2 | Create vocab-to-content highlighting | 6.3.1, 4.2.3 | Highlight tests |
 
@@ -507,7 +507,7 @@ cdk/lib/lambda/agent/
 **Location**: `comprehend/contexts/ChatContext/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 6.4.1 | Create ChatContext with state and actions | 3.5.6 | Context unit tests |
 | 6.4.2 | Create message history management | 6.4.1 | History tests |
 | 6.4.3 | Create agent response handling | 6.4.1, 5.3.2 | Response handling tests |
@@ -517,7 +517,7 @@ cdk/lib/lambda/agent/
 **Location**: `comprehend/components/chat/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 6.5.1 | Create ChatMessage component | 0.3.2 | Component + a11y tests |
 | 6.5.2 | Create ChatInput component | 0.3.2 | Component + a11y tests |
 | 6.5.3 | Create ChatWindow component (sliding panel) | 6.5.1, 6.5.2, 6.4.1 | Component + a11y tests |
@@ -528,7 +528,7 @@ cdk/lib/lambda/agent/
 **Location**: `comprehend/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 6.6.1 | Connect token tap to chat window open | 4.2.3, 6.5.3 | Integration tests |
 | 6.6.2 | Create auto-query for new token vocab | 6.6.1, 6.4.3 | Auto-query tests |
 | 6.6.3 | Handle existing vocab tap (show existing entry) | 6.6.1, 6.1.3 | Existing vocab tests |
@@ -571,7 +571,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 7.1.1 | Implement full-text search query builder | 2.1.2 | Query builder tests |
 | 7.1.2 | Add search to GET /exercises handler | 7.1.1, 3.2.2 | Search integration tests |
 | 7.1.3 | Implement relevance scoring | 7.1.1 | Scoring tests |
@@ -581,7 +581,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/exercises/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 7.2.1 | Implement sort options (createdAt, updatedAt, etc.) | 3.2.2 | Sort tests |
 | 7.2.2 | Implement pagination with limit/offset | 3.2.2 | Pagination tests |
 
@@ -590,7 +590,7 @@ comprehend/
 **Location**: `comprehend/contexts/HistoryContext/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 7.3.1 | Create HistoryContext with state and actions | 3.5.4 | Context unit tests |
 | 7.3.2 | Create search state management | 7.3.1 | Search state tests |
 | 7.3.3 | Create sort state management | 7.3.1 | Sort state tests |
@@ -600,7 +600,7 @@ comprehend/
 **Location**: `comprehend/components/history/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 7.4.1 | Create ExerciseListItem component | 0.3.2 | Component + a11y tests |
 | 7.4.2 | Create ExerciseList component with pagination | 7.4.1, 7.3.1 | Component + a11y tests |
 | 7.4.3 | Create SearchBar component | 0.3.2 | Component + a11y tests |
@@ -611,7 +611,7 @@ comprehend/
 **Location**: `comprehend/app/(tabs)/history.tsx`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 7.5.1 | Create History screen layout | 7.4.2, 7.4.3, 7.4.4 | Screen + a11y tests |
 | 7.5.2 | Create delete confirmation dialog | 7.5.1 | Dialog tests |
 | 7.5.3 | Create exercise selection and navigation | 7.5.1, 4.1.1 | Navigation tests |
@@ -646,7 +646,7 @@ comprehend/
 **Location**: `cdk/lib/lambda/api/export/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 8.1.1 | Create export types and interfaces | 2.3.1 | Type compilation |
 | 8.1.2 | Create CSV export generator | 8.1.1 | Generator unit tests |
 | 8.1.3 | Create Anki package generator (APKG format) | 8.1.1 | Generator unit tests |
@@ -657,7 +657,7 @@ comprehend/
 **Location**: `comprehend/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 8.2.1 | Create export API methods | 3.5.1, 8.1.4 | API method tests |
 | 8.2.2 | Create file download/share service | 8.2.1 | Service unit tests |
 
@@ -666,7 +666,7 @@ comprehend/
 **Location**: `comprehend/components/export/`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 8.3.1 | Create ExportOptions modal | 0.3.2 | Component + a11y tests |
 | 8.3.2 | Create export format selector (CSV/Anki) | 8.3.1 | Component tests |
 | 8.3.3 | Create export progress indicator | 8.3.1 | Component tests |
@@ -704,7 +704,7 @@ comprehend/
 ### 9.1 Performance Optimization
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 9.1.1 | Implement response caching in API client | 3.5.1 | Cache tests |
 | 9.1.2 | Optimize tokenized content rendering | 4.2.2 | Performance tests |
 | 9.1.3 | Implement lazy loading for history list | 7.4.2 | Lazy loading tests |
@@ -713,7 +713,7 @@ comprehend/
 ### 9.2 Accessibility Audit
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 9.2.1 | VoiceOver/TalkBack testing pass | All screens | Manual a11y tests |
 | 9.2.2 | Keyboard navigation testing | All screens | Keyboard tests |
 | 9.2.3 | Color contrast verification | All UI | Contrast tests |
@@ -724,7 +724,7 @@ comprehend/
 **Location**: `comprehend/app/(tabs)/profile.tsx`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 9.3.1 | Create Profile screen layout | 0.3.2, 1.3.4 | Screen + a11y tests |
 | 9.3.2 | Create profile editing functionality | 9.3.1 | Edit tests |
 | 9.3.3 | Create sign out functionality | 9.3.1, 1.3.4 | Sign out tests |
@@ -732,7 +732,7 @@ comprehend/
 ### 9.4 Error Handling & Recovery
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 9.4.1 | Create global error boundary | 0.3.2 | Error boundary tests |
 | 9.4.2 | Create offline indicator | 0.3.2 | Offline indicator tests |
 | 9.4.3 | Implement retry UI for failed operations | 3.5.3 | Retry UI tests |
@@ -742,7 +742,7 @@ comprehend/
 **Location**: `comprehend/app/(tabs)/_layout.tsx`
 
 | Unit | Description | Dependencies | Tests |
-|------|-------------|--------------|-------|
+| ------ | ------------- | -------------- | ------- |
 | 9.5.1 | Create tab navigation layout | All screens | Navigation tests |
 | 9.5.2 | Add tab icons and labels | 9.5.1 | Visual tests |
 | 9.5.3 | Implement tab badge for unread items (if applicable) | 9.5.1 | Badge tests |
@@ -752,14 +752,14 @@ comprehend/
 ### Users
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| -------- | ---------- | ------------- |
 | POST | /users | Create a new user |
 | DELETE | /users/{id} | Delete a user |
 
 ### Exercises
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| -------- | ---------- | ------------- |
 | POST | /exercises | Create a new exercise |
 | GET | /exercises | List exercises with query params |
 | GET | /exercises/{id} | Get exercise by ID with optional includes |
@@ -769,7 +769,7 @@ comprehend/
 **Query Parameters for GET /exercises:**
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+| ----------- | ------ | ------------- |
 | sort | string | Sort field (createdAt, updatedAt, lastAccessedAt, relevance, title) |
 | order | string | Sort order (asc, desc) |
 | limit | number | Number of results |
@@ -779,13 +779,13 @@ comprehend/
 **Query Parameters for GET /exercises/{id}:**
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+| ----------- | ------ | ------------- |
 | include | string[] | Related data to include (tokens, vocab, messages) |
 
 ### Vocab
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| -------- | ---------- | ------------- |
 | POST | /exercises/{id}/vocab | Add vocab to exercise |
 | GET | /exercises/{id}/vocab | Get all vocab for exercise |
 | PATCH | /exercises/{id}/vocab/{vocabId} | Update a vocab entry |
@@ -793,13 +793,13 @@ comprehend/
 ### Messages
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| -------- | ---------- | ------------- |
 | POST | /exercises/{id}/messages | Send message to ReaderAgent |
 
 ### Export
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| -------- | ---------- | ------------- |
 | GET | /exercises/{id}/export | Export vocab (format=csv\|anki) |
 
 ## Appendix: Database Schema
@@ -884,7 +884,7 @@ CREATE INDEX idx_exercise_search ON exercise USING GIN(to_tsvector('simple', tit
 ## Development Timeline Estimate
 
 | Phase | Estimated Duration | Parallel Work Possible |
-|-------|-------------------|------------------------|
+| ------- | ------------------- | ------------------------ |
 | Phase 0 | 1-2 weeks | CDK + Expo can run in parallel |
 | Phase 1 | 1-2 weeks | Backend auth + Client auth can overlap |
 | Phase 2 | 1 week | Sequential |
