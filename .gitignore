@@ -58,3 +58,5 @@ app-example
 
 .notes.md
 x.py
+
+coverage/
