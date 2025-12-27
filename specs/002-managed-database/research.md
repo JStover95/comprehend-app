@@ -95,21 +95,29 @@ This document consolidates technical decisions and research findings for impleme
 - Manual SQL execution: Defeats automation goal
 - Separate deployment pipeline: Adds complexity, breaks infrastructure-as-code
 
-### Schema Management: SQL Scripts in Lambda
+### Schema Management: SQL Scripts Bundled in Lambda
 
-**Decision**: Embed schema SQL directly in Lambda function (or load from S3 if large)
+**Decision**: Bundle schema SQL into Lambda code using CDK `afterBundling` command hook
 
 **Rationale**:
 
 - Simple deployment model (no external dependencies)
 - Version controlled with infrastructure code
-- Fast execution (no S3 fetch overhead for small schemas)
+- Fast execution (no S3 fetch overhead, SQL files bundled at build time)
 - Easy to test with MockPool
+- SQL files included in Lambda package automatically via bundling
+
+**Implementation**:
+
+- Schema SQL files stored alongside Lambda code
+- CDK bundling configuration uses `afterBundling` hook to copy SQL files into Lambda package
+- SQL files read from Lambda filesystem at runtime
 
 **Alternatives Considered**:
 
 - Database migration tools (Flyway, Liquibase): Overkill for initial bootstrap, adds dependencies
-- S3-hosted SQL: Additional dependency, requires S3 bucket setup
+- S3-hosted SQL: Additional dependency, requires S3 bucket setup, network fetch overhead
+- Embedded SQL strings in code: Less maintainable, harder to version control SQL separately
 - Terraform/RDS provider: Not using Terraform, CDK-native approach preferred
 
 ### PostgreSQL Extensions: pgroonga

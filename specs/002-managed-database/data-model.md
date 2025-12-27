@@ -43,9 +43,9 @@ Represents a reading comprehension exercise created by a user.
 - `title` (TEXT, NOT NULL): Title of the exercise
 - `content` (TEXT, NOT NULL): Full text content of the exercise
 - `language` (VARCHAR(10), NOT NULL): Language code (e.g., 'en', 'ja', 'zh')
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW()): When the exercise was created
-- `updated_at` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW()): When the exercise was last modified
-- `last_accessed_at` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW()): When the exercise was last accessed
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT (NOW() AT TIME ZONE 'UTC')): When the exercise was created (UTC)
+- `updated_at` (TIMESTAMP WITH TIME ZONE, DEFAULT (NOW() AT TIME ZONE 'UTC')): When the exercise was last modified (UTC)
+- `last_accessed_at` (TIMESTAMP WITH TIME ZONE, DEFAULT (NOW() AT TIME ZONE 'UTC')): When the exercise was last accessed (UTC)
 - `is_archived` (BOOLEAN, DEFAULT FALSE): Whether the exercise is archived
 
 **Relationships**:
@@ -162,7 +162,7 @@ Represents a message in a conversation about an exercise (user questions, assist
 - `chat_message_exercise_id` (UUID, NOT NULL, FOREIGN KEY): Reference to the exercise this message is about
 - `role` (VARCHAR(20), NOT NULL): Role of the message sender ('user' or 'assistant')
 - `content` (TEXT, NOT NULL): Message content
-- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW()): When the message was created
+- `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT (NOW() AT TIME ZONE 'UTC')): When the message was created (UTC)
 
 **Relationships**:
 
@@ -181,7 +181,7 @@ Represents a message in a conversation about an exercise (user questions, assist
 
 ## Schema Relationships Diagram
 
-```
+```text
 user
   └── exercise (1:N)
       ├── token (1:N)
@@ -196,22 +196,22 @@ user
 2. **Chat Message Role**: Must be either 'user' or 'assistant' (enforced by CHECK constraint)
 3. **Token Indices**: `start_index` must be less than `end_index` (application-level validation)
 4. **Vocab Excerpt Indices**: `excerpt_start_index` must be less than `excerpt_end_index` (application-level validation)
-5. **Timestamps**: All timestamp fields use `TIMESTAMP WITH TIME ZONE` for proper timezone handling
+5. **Timestamps**: All timestamp fields use `TIMESTAMP WITH TIME ZONE` and default to UTC timezone for consistent timezone-aware storage
 
 ## State Transitions
 
 ### Exercise Lifecycle
 
-1. **Created**: `created_at` set, `is_archived = false`
-2. **Updated**: `updated_at` updated when exercise content modified
-3. **Accessed**: `last_accessed_at` updated when exercise viewed
+1. **Created**: `created_at` set to UTC, `is_archived = false`
+2. **Updated**: `updated_at` updated to UTC when exercise content modified
+3. **Accessed**: `last_accessed_at` updated to UTC when exercise viewed
 4. **Archived**: `is_archived = true` (soft delete)
 
 ### Chat Message Flow
 
-1. **User Message**: `role = 'user'`, `content` contains user question
-2. **Assistant Response**: `role = 'assistant'`, `content` contains assistant response
-3. Messages ordered by `created_at` for conversation history
+1. **User Message**: `role = 'user'`, `content` contains user question, `created_at` set to UTC
+2. **Assistant Response**: `role = 'assistant'`, `content` contains assistant response, `created_at` set to UTC
+3. Messages ordered by `created_at` (UTC) for conversation history
 
 ## PostgreSQL Extensions
 
@@ -239,4 +239,4 @@ user
 - **Cascade Deletes**: All child records (tokens, vocab, messages) are automatically deleted when parent exercise is deleted
 - **Referential Integrity**: Foreign keys ensure data consistency
 - **UUID Primary Keys**: Prevent ID collisions and provide globally unique identifiers
-- **Timestamps**: All timestamps use timezone-aware types for accurate temporal queries
+- **Timestamps**: All timestamps use timezone-aware types (TIMESTAMP WITH TIME ZONE) and default to UTC for consistent storage and accurate temporal queries across timezones

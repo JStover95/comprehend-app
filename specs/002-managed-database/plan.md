@@ -15,7 +15,7 @@ Deploy a secure, managed Aurora PostgreSQL database with automatic schema bootst
 **Primary Dependencies**: AWS CDK v2, aws-cdk-lib (RDS, Lambda, Secrets Manager, IAM), pg (PostgreSQL client), @aws-sdk/rds-signer (IAM auth tokens)  
 **Storage**: Amazon Aurora PostgreSQL 17.x (Serverless V2), Secrets Manager (master credentials)  
 **Testing**: Jest, aws-cdk-lib/assertions, moto (AWS SDK mocking), MockPool factory pattern  
-**Target Platform**: AWS Lambda (Node.js 20.x runtime) for bootstrap, Aurora Serverless V2 for database  
+**Target Platform**: AWS Lambda (Node.js 22.x runtime) for bootstrap, Aurora Serverless V2 for database  
 **Project Type**: Infrastructure (CDK construct + Lambda custom resource)  
 **Performance Goals**: Database supports 100+ concurrent connections, Aurora Serverless V2 scales 0-2 ACUs (dev) to production capacity automatically  
 **Constraints**: Database must be in private subnet, no public access, IAM authentication required for services, bootstrap must be idempotent, environment-specific scaling (dev: 0-2 ACUs, prod: multi-AZ)  
@@ -26,7 +26,7 @@ Deploy a secure, managed Aurora PostgreSQL database with automatic schema bootst
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 | Principle | Compliance | Notes |
-|-----------|------------|-------|
+| ----------- | ------------ | ------- |
 | I. Testing-First | ✅ Compliant | Unit tests with MockPool factory, moto for AWS SDK mocking, no integration tests required per plan-prompt |
 | II. Accessibility-First | ✅ N/A | Infrastructure feature, no user-facing UI |
 | III. Modular Architecture | ✅ Compliant | Agent pattern (Handler → Agent → Provider), separation of concerns (DbCredentialsProvider, DbConnectionProvider) |
@@ -35,7 +35,7 @@ Deploy a secure, managed Aurora PostgreSQL database with automatic schema bootst
 
 **Design Docs to Review:**
 
-- Backend (`cdk/`): 
+- Backend (`cdk/`):
   - `agent-pattern.md` - CloudFormation custom resource handler pattern
   - `types-and-configuration.md` - Configuration structure with clientConfig
   - `testing/` - Mocking strategies (factory pattern, moto, MockPool)
@@ -87,7 +87,8 @@ cdk/
     │           ├── db-bootstrap-agent.test.ts   # Agent tests
     │           ├── db-credentials-provider.test.ts
     │           ├── db-connection-provider.test.ts
-    │           └── schema-provider.test.ts
+    │           ├── schema-provider.test.ts
+    │           └── cfn-response-handler.test.ts # CloudFormation response handler tests
     └── utils/
         ├── mock-pool.ts                         # Shared MockPool factory
         └── moto.ts                              # Moto reset utility
@@ -100,6 +101,6 @@ cdk/
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
+| ----------- | ------------ | ------------------------------------- |
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
