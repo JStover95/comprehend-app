@@ -246,15 +246,15 @@ N/A
 
 **Tests:**
 
-- [ ] T048 [US4] Update unit tests to verify environment-specific configurations in `cdk/test/unit/constructs/database/database-construct.test.ts` including dev, staging, and prod configurations
+- [X] T048 [US4] Update unit tests to verify environment-specific configurations in `cdk/test/unit/constructs/database/database-construct.test.ts` including dev, staging, and prod configurations
 
 **Implementation:**
 
-- [ ] T049 [US4] Add environment-specific ACU configuration logic in `cdk/lib/constructs/database/database-construct.ts` (dev: 0-2, staging: 0-2, prod: configurable)
-- [ ] T050 [US4] Add multi-AZ configuration based on environment in `cdk/lib/constructs/database/database-construct.ts` (dev: single-AZ, staging: single-AZ, prod: multi-AZ)
-- [ ] T051 [US4] Add environment-specific backup retention configuration in `cdk/lib/constructs/database/database-construct.ts` (dev: 1 day, staging: 1 day, prod: 7 days minimum)
-- [ ] T052 [US4] Add environment-specific maintenance window configuration in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T053 [US4] Update quickstart.md with environment-specific configuration examples in `specs/002-managed-database/quickstart.md` including dev, staging, and prod
+- [X] T049 [US4] Add environment-specific ACU configuration logic in `cdk/lib/constructs/database/database-construct.ts` (dev: 0-2, staging: 0-2, prod: configurable)
+- [X] T050 [US4] Add multi-AZ configuration based on environment in `cdk/lib/constructs/database/database-construct.ts` (dev: single-AZ, staging: single-AZ, prod: multi-AZ)
+- [X] T051 [US4] Add environment-specific backup retention configuration in `cdk/lib/constructs/database/database-construct.ts` (dev: 1 day, staging: 1 day, prod: 7 days minimum)
+- [X] T052 [US4] Add environment-specific maintenance window configuration in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T053 [US4] Update quickstart.md with environment-specific configuration examples in `specs/002-managed-database/quickstart.md` including dev, staging, and prod
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
