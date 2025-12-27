@@ -211,18 +211,18 @@ N/A
 
 **Tests:**
 
-- [ ] T039 [US3] Write unit tests for DbCredentialsProvider in `cdk/test/unit/lambda/db-bootstrap/db-credentials-provider.test.ts` with mocked RDS Signer
-- [ ] T040 [US3] Write unit tests for DbConnectionProvider IAM pool creation in `cdk/test/unit/lambda/db-bootstrap/db-connection-provider.test.ts`
-- [ ] T041 [US3] Write additional unit tests for DbBootstrapAgent IAM user creation and connection test in `cdk/test/unit/lambda/db-bootstrap/db-bootstrap-agent.test.ts` covering IAM authentication flow
+- [X] T039 [US3] Write unit tests for DbCredentialsProvider in `cdk/test/unit/lambda/db-bootstrap/db-credentials-provider.test.ts` with mocked RDS Signer
+- [X] T040 [US3] Write unit tests for DbConnectionProvider IAM pool creation in `cdk/test/unit/lambda/db-bootstrap/db-connection-provider.test.ts`
+- [X] T041 [US3] Write additional unit tests for DbBootstrapAgent IAM user creation and connection test in `cdk/test/unit/lambda/db-bootstrap/db-bootstrap-agent.test.ts` covering IAM authentication flow
 
 **Implementation:**
 
-- [ ] T042 [US3] Create DbCredentialsProvider class in `cdk/lib/lambda/db-bootstrap/db-credentials-provider.ts` for IAM auth token generation using RDS Signer
-- [ ] T043 [US3] Update DbConnectionProvider to support IAM pool creation in `cdk/lib/lambda/db-bootstrap/db-connection-provider.ts` accepting auth tokens
-- [ ] T044 [US3] Add IAM database user creation to bootstrap process in `cdk/lib/lambda/db-bootstrap/db-bootstrap-agent.ts` (CREATE USER IF NOT EXISTS)
-- [ ] T045 [US3] Add IAM connection test to bootstrap process in `cdk/lib/lambda/db-bootstrap/db-bootstrap-agent.ts` after schema creation
-- [ ] T046 [US3] Update bootstrap Lambda execution role with IAM database authentication permissions in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T047 [US3] Update DatabaseConstruct to export IAM user name in stack outputs in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T042 [US3] Create DbCredentialsProvider class in `cdk/lib/lambda/db-bootstrap/db-credentials-provider.ts` for IAM auth token generation using RDS Signer
+- [X] T043 [US3] Update DbConnectionProvider to support IAM pool creation in `cdk/lib/lambda/db-bootstrap/db-connection-provider.ts` accepting auth tokens
+- [X] T044 [US3] Add IAM database user creation to bootstrap process in `cdk/lib/lambda/db-bootstrap/db-bootstrap-agent.ts` (CREATE USER IF NOT EXISTS)
+- [X] T045 [US3] Add IAM connection test to bootstrap process in `cdk/lib/lambda/db-bootstrap/db-bootstrap-agent.ts` after schema creation
+- [X] T046 [US3] Update bootstrap Lambda execution role with IAM database authentication permissions in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T047 [US3] Update DatabaseConstruct to export IAM user name in stack outputs in `cdk/lib/constructs/database/database-construct.ts`
 
 ## Phase 6: User Story 4 - Deploy Database Across Multiple Environments (P3)
 
