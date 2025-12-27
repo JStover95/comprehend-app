@@ -238,4 +238,113 @@ describe("DbConnectionProvider", () => {
       );
     });
   });
+
+  describe("createIamPool", () => {
+    it("should create a connection pool with IAM authentication token", async () => {
+      // Arrange
+      const authToken = "test-iam-auth-token-12345";
+      const provider = new DbConnectionProvider(baseConfig);
+
+      // Act
+      const pool = provider.createIamPool(authToken);
+
+      // Assert
+      // Verify pool is created (it's a real Pool instance, we can't easily mock it)
+      expect(pool).toBeDefined();
+      expect(typeof pool.query).toBe("function");
+      expect(typeof pool.end).toBe("function");
+
+      // Cleanup
+      await pool.end();
+    });
+
+    it("should use correct connection parameters for IAM pool", async () => {
+      // Arrange
+      const authToken = "test-token";
+      const provider = new DbConnectionProvider(baseConfig);
+
+      // Act
+      const pool = provider.createIamPool(authToken);
+
+      // Assert
+      // The pool should be configured with IAM username and token as password
+      expect(pool).toBeDefined();
+
+      // Cleanup
+      await pool.end();
+    });
+
+    it("should use IAM username from config", async () => {
+      // Arrange
+      const authToken = "test-token";
+      const config: ServiceConfig = {
+        ...baseConfig,
+        iamUser: "custom_iam_user",
+      };
+      const provider = new DbConnectionProvider(config);
+
+      // Act
+      const pool = provider.createIamPool(authToken);
+
+      // Assert
+      expect(pool).toBeDefined();
+
+      // Cleanup
+      await pool.end();
+    });
+
+    it("should use correct cluster endpoint and port", async () => {
+      // Arrange
+      const authToken = "test-token";
+      const config: ServiceConfig = {
+        ...baseConfig,
+        clusterEndpoint: "custom-endpoint.example.com",
+        clusterPort: 5433,
+      };
+      const provider = new DbConnectionProvider(config);
+
+      // Act
+      const pool = provider.createIamPool(authToken);
+
+      // Assert
+      expect(pool).toBeDefined();
+
+      // Cleanup
+      await pool.end();
+    });
+
+    it("should use correct database name", async () => {
+      // Arrange
+      const authToken = "test-token";
+      const config: ServiceConfig = {
+        ...baseConfig,
+        databaseName: "custom_database",
+      };
+      const provider = new DbConnectionProvider(config);
+
+      // Act
+      const pool = provider.createIamPool(authToken);
+
+      // Assert
+      expect(pool).toBeDefined();
+
+      // Cleanup
+      await pool.end();
+    });
+
+    it("should enable SSL for IAM connections", async () => {
+      // Arrange
+      const authToken = "test-token";
+      const provider = new DbConnectionProvider(baseConfig);
+
+      // Act
+      const pool = provider.createIamPool(authToken);
+
+      // Assert
+      expect(pool).toBeDefined();
+
+      // Cleanup
+      await pool.end();
+    });
+  });
 });

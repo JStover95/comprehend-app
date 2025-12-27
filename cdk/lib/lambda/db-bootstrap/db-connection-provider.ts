@@ -112,4 +112,39 @@ export class DbConnectionProvider {
       );
     }
   }
+
+  /**
+   * Creates a connection pool using IAM authentication token
+   * Used for service operations with temporary IAM credentials
+   *
+   * @param authToken - IAM authentication token from RDS Signer
+   * @returns Connection pool configured with IAM authentication
+   * @throws ConnectionError if pool creation fails
+   */
+  createIamPool(authToken: string): Pool {
+    try {
+      // Create connection pool with IAM authentication
+      const pool = new Pool({
+        host: this.config.clusterEndpoint,
+        port: this.config.clusterPort,
+        database: this.config.databaseName,
+        user: this.config.iamUser,
+        password: authToken, // IAM token used as password
+        ssl: {
+          rejectUnauthorized: true,
+        },
+        // Connection pool settings
+        max: 5, // Maximum number of clients in the pool
+        idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+        connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection cannot be established
+      });
+
+      return pool;
+    } catch (error) {
+      throw new ConnectionError(
+        "Failed to create IAM connection pool",
+        error as Error,
+      );
+    }
+  }
 }
