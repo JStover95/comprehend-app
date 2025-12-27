@@ -2,6 +2,7 @@ import { CloudFormationCustomResourceEvent, Context } from "aws-lambda";
 import { validateConfig } from "./config";
 import { DbBootstrapAgent } from "./db-bootstrap-agent";
 import { DbConnectionProvider } from "./db-connection-provider";
+import { DbCredentialsProvider } from "./db-credentials-provider";
 import { SchemaProvider } from "./schema-provider";
 import { sendFailure } from "./cfn-response-handler";
 import { BootstrapError } from "./errors";
@@ -28,12 +29,14 @@ export async function handler(
     // Step 2: Initialize providers
     const connectionProvider = new DbConnectionProvider(config);
     const schemaProvider = new SchemaProvider(config);
+    const credentialsProvider = new DbCredentialsProvider(config);
 
     // Step 3: Initialize agent
     const agent = new DbBootstrapAgent(
       config,
       connectionProvider,
       schemaProvider,
+      credentialsProvider,
     );
 
     // Step 4: Delegate to agent to handle the request

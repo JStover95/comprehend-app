@@ -5,6 +5,7 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as customResources from "aws-cdk-lib/custom-resources";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as path from "path";
 import { Construct } from "constructs";
 import { EnvironmentConfig } from "../../types";
@@ -281,6 +282,18 @@ export class DatabaseConstruct extends Construct {
 
     // Grant Lambda permissions to read secret
     this.secret.grantRead(bootstrapFunction);
+
+    // Grant Lambda permissions for IAM database authentication
+    // The Lambda needs permission to generate IAM auth tokens for RDS
+    bootstrapFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["rds-db:connect"],
+        resources: [
+          `arn:aws:rds-db:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:dbuser:${this.cluster.clusterIdentifier}/${this.iamUser}`,
+        ],
+      }),
+    );
 
     // Grant Lambda permissions to connect to database (VPC access)
     // The Lambda is already in the VPC with access to the security group
