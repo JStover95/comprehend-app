@@ -7,9 +7,9 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --collectCoverageFrom='lib/**/*.ts'",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --collectCoverageFrom='lib/**/*.ts'",
     "cdk": "cdk",
     "lint": "eslint lib test --ext .ts",
     "format": "prettier --write 'lib/**/*.ts' 'test/**/*.ts'"
