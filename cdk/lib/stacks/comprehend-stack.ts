@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { VpcConstruct } from "../constructs/networking/vpc-construct";
+import { DatabaseConstruct } from "../constructs/database/database-construct";
 import {
   EnvironmentConfig,
   DEFAULT_ENVIRONMENT_CONFIGS,
@@ -56,6 +57,11 @@ export class ComprehendStack extends cdk.Stack {
    */
   public readonly vpcConstruct: VpcConstruct;
 
+  /**
+   * Database construct
+   */
+  public readonly databaseConstruct: DatabaseConstruct;
+
   constructor(scope: Construct, id: string, props: ComprehendStackProps = {}) {
     super(scope, id, props);
 
@@ -73,6 +79,13 @@ export class ComprehendStack extends cdk.Stack {
 
     // Create VPC construct
     this.vpcConstruct = new VpcConstruct(this, "VpcConstruct", {
+      environmentConfig: this.environmentConfig,
+    });
+
+    // Create database construct
+    this.databaseConstruct = new DatabaseConstruct(this, "DatabaseConstruct", {
+      vpc: this.vpcConstruct.vpc,
+      privateSubnets: this.vpcConstruct.privateSubnets,
       environmentConfig: this.environmentConfig,
     });
 

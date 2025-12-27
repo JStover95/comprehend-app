@@ -136,21 +136,21 @@ N/A
 
 **Tests:**
 
-- [ ] T015 [US1] Write unit tests for DatabaseConstruct in `cdk/test/unit/constructs/database/database-construct.test.ts` verifying cluster configuration, encryption, and security groups
+- [X] T015 [US1] Write unit tests for DatabaseConstruct in `cdk/test/unit/constructs/database/database-construct.test.ts` verifying cluster configuration, encryption, and security groups
 
 **Implementation:**
 
-- [ ] T016 [US1] Create DatabaseConstruct class in `cdk/lib/constructs/database/database-construct.ts` with constructor accepting VPC and environment config
-- [ ] T017 [US1] Implement Aurora PostgreSQL Serverless V2 cluster creation in `cdk/lib/constructs/database/database-construct.ts` with engine version 17.x
-- [ ] T018 [US1] Configure cluster to use private subnets only (no public access) in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T019 [US1] Enable encryption at rest and in transit for Aurora cluster in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T020 [US1] Enable IAM database authentication on Aurora cluster in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T021 [US1] Create Secrets Manager secret for master credentials using `rds.Credentials.fromGeneratedSecret` in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T022 [US1] Configure security groups to allow database access only from within VPC in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T023 [US1] Export stack outputs (endpoint, port, secret ARN, IAM user) from DatabaseConstruct in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T024 [US1] Add environment-specific ACU scaling configuration (dev: 0-2 ACUs, staging: 0-2 ACUs) in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T025 [US1] Apply environment tags to all database resources in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T026 [US1] Integrate DatabaseConstruct into ComprehendStack in `cdk/lib/stacks/comprehend-stack.ts` referencing VpcConstruct
+- [X] T016 [US1] Create DatabaseConstruct class in `cdk/lib/constructs/database/database-construct.ts` with constructor accepting VPC and environment config
+- [X] T017 [US1] Implement Aurora PostgreSQL Serverless V2 cluster creation in `cdk/lib/constructs/database/database-construct.ts` with engine version 17.x
+- [X] T018 [US1] Configure cluster to use private subnets only (no public access) in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T019 [US1] Enable encryption at rest and in transit for Aurora cluster in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T020 [US1] Enable IAM database authentication on Aurora cluster in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T021 [US1] Create Secrets Manager secret for master credentials using `rds.Credentials.fromGeneratedSecret` in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T022 [US1] Configure security groups to allow database access only from within VPC in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T023 [US1] Export stack outputs (endpoint, port, secret ARN, IAM user) from DatabaseConstruct in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T024 [US1] Add environment-specific ACU scaling configuration (dev: 0-2 ACUs, staging: 0-2 ACUs) in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T025 [US1] Apply environment tags to all database resources in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T026 [US1] Integrate DatabaseConstruct into ComprehendStack in `cdk/lib/stacks/comprehend-stack.ts` referencing VpcConstruct
 
 ## Phase 4: User Story 2 - Bootstrap Database Schema Automatically (P2)
 
