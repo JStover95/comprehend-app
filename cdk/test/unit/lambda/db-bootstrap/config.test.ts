@@ -56,7 +56,6 @@ describe("validateConfig", () => {
         ClusterPort: "5432",
         DatabaseName: DB_NAME,
         IamUser: IAM_USERNAME,
-        Region: AWS_REGION,
         Environment: "dev",
       };
 
@@ -67,7 +66,6 @@ describe("validateConfig", () => {
       expect(config.clusterPort).toBe(5432);
       expect(config.databaseName).toBe(DB_NAME);
       expect(config.iamUser).toBe(IAM_USERNAME);
-      expect(config.region).toBe(AWS_REGION);
       expect(config.environment).toBe("dev");
       expect(config.clientConfig).toBeUndefined();
     });
@@ -82,7 +80,6 @@ describe("validateConfig", () => {
         ClusterPort: undefined,
         DatabaseName: undefined,
         IamUser: undefined,
-        Region: undefined,
         Environment: undefined,
       };
 
@@ -100,7 +97,6 @@ describe("validateConfig", () => {
       expect(config.clusterPort).toBe(5433);
       expect(config.databaseName).toBe("testdb");
       expect(config.iamUser).toBe("env_user");
-      expect(config.region).toBe("us-west-2");
       expect(config.environment).toBe("staging");
     });
 
@@ -144,8 +140,8 @@ describe("validateConfig", () => {
       expect(config.clusterPort).toBe(5432);
     });
 
-    it("should use default region and environment when not provided", () => {
-      // Clear ENVIRONMENT to test default value (region uses AWS_REGION from beforeEach)
+    it("should use default environment when not provided", () => {
+      // Clear ENVIRONMENT to test default value
       delete process.env.ENVIRONMENT;
 
       const event = mockCreateEvent();
@@ -155,13 +151,11 @@ describe("validateConfig", () => {
         ClusterEndpoint: CLUSTER_ENDPOINT,
         DatabaseName: DB_NAME,
         IamUser: IAM_USERNAME,
-        Region: undefined,
         Environment: undefined,
       };
 
       const config = validateConfig(event);
 
-      expect(config.region).toBe(AWS_REGION);
       expect(config.environment).toBe("production");
     });
 

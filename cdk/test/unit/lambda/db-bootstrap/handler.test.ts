@@ -50,7 +50,6 @@ describe("handler", () => {
       clusterPort: 5432,
       databaseName: "postgres",
       iamUser: "db_service_user",
-      region: "us-east-1",
       environment: "dev",
     });
 
@@ -76,7 +75,6 @@ describe("handler", () => {
         clusterPort: 5432,
         databaseName: "postgres",
         iamUser: "db_service_user",
-        region: "us-east-1",
         environment: "dev",
       });
 
@@ -101,7 +99,6 @@ describe("handler", () => {
         clusterPort: 5432,
         databaseName: "postgres",
         iamUser: "db_service_user",
-        region: "us-east-1",
         environment: "dev",
       });
 
@@ -136,7 +133,6 @@ describe("handler", () => {
         clusterPort: 5432,
         databaseName: "postgres",
         iamUser: "db_service_user",
-        region: "us-east-1",
         environment: "dev",
       });
 
@@ -164,7 +160,6 @@ describe("handler", () => {
         clusterPort: 5432,
         databaseName: "postgres",
         iamUser: "db_service_user",
-        region: "us-east-1",
         environment: "dev",
       });
 
@@ -213,7 +208,6 @@ describe("handler", () => {
         clusterPort: 5432,
         databaseName: "postgres",
         iamUser: "db_service_user",
-        region: "us-east-1",
         environment: "dev",
       });
 

@@ -35,14 +35,11 @@ export class DbConnectionProvider {
   constructor(private readonly config: ServiceConfig) {
     if (config.clientConfig) {
       this.secretsManager = new SecretsManagerClient({
-        region: config.region,
         endpoint: config.clientConfig.endpoint,
         credentials: config.clientConfig.credentials,
       });
     } else {
-      this.secretsManager = new SecretsManagerClient({
-        region: config.region,
-      });
+      this.secretsManager = new SecretsManagerClient();
     }
   }
 

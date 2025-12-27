@@ -41,7 +41,6 @@ const baseConfig: ServiceConfig = {
   clusterPort: CLUSTER_PORT,
   databaseName: DB_NAME,
   iamUser: IAM_USERNAME,
-  region: AWS_REGION,
   environment: "dev",
   clientConfig: testClientConfig,
 };
@@ -56,7 +55,6 @@ describe("DbConnectionProvider", () => {
   beforeAll(() => {
     // Create Secrets Manager client pointing to moto
     secretsManagerClient = new SecretsManagerClient({
-      region: AWS_REGION,
       ...testClientConfig,
     });
   });

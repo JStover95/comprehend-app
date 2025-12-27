@@ -31,10 +31,6 @@ export function validateConfig(
     (event.ResourceProperties?.IamUser as string | undefined);
 
   // Optional with defaults
-  const region =
-    process.env.AWS_REGION ||
-    (event.ResourceProperties?.Region as string | undefined) ||
-    "us-east-1";
   const environment =
     process.env.ENVIRONMENT ||
     (event.ResourceProperties?.Environment as string | undefined) ||
@@ -84,7 +80,6 @@ export function validateConfig(
     clusterPort: port,
     databaseName,
     iamUser,
-    region,
     environment,
     clientConfig,
   };

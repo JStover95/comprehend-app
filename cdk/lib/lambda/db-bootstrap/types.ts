@@ -39,7 +39,6 @@ export interface DatabaseConnectionConfig {
  * @param clusterPort - Database port number
  * @param databaseName - Name of the database to bootstrap
  * @param iamUser - IAM database username for service authentication
- * @param region - AWS region where resources are located
  * @param environment - Deployment environment (dev, staging, prod)
  * @param clientConfig - AWS client configuration overrides for testing
  */
@@ -49,7 +48,6 @@ export interface ServiceConfig {
   clusterPort: number;
   databaseName: string;
   iamUser: string;
-  region: string;
   environment: string;
   clientConfig?: ClientConfig;
 }

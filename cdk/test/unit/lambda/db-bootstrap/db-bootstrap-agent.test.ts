@@ -18,7 +18,6 @@ jest.mock("../../../../lib/lambda/db-bootstrap/cfn-response-handler");
 // Test Configuration Constants
 // ==========================================
 
-const AWS_REGION = "us-east-1";
 const CLUSTER_ENDPOINT =
   "test-cluster.cluster-abc123.us-east-1.rds.amazonaws.com";
 const CLUSTER_PORT = 5432;
@@ -33,7 +32,6 @@ const baseConfig: ServiceConfig = {
   clusterPort: CLUSTER_PORT,
   databaseName: DB_NAME,
   iamUser: IAM_USERNAME,
-  region: AWS_REGION,
   environment: "dev",
 };
 
