@@ -1,4 +1,4 @@
-import http from "http";
+import * as http from "http";
 
 /**
  * Resets moto (AWS service mocking) state
