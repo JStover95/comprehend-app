@@ -99,20 +99,20 @@ N/A
 
 **Mocks:**
 
-- [ ] T007 [P] Create shared MockPool factory class in `cdk/test/utils/mock-pool.ts` following plan-prompt.md pattern
-- [ ] T008 [P] Create moto reset utility function in `cdk/test/utils/moto.ts` for AWS SDK mocking
+- [X] T007 [P] Create shared MockPool factory class in `cdk/test/utils/mock-pool.ts` following plan-prompt.md pattern
+- [X] T008 [P] Create moto reset utility function in `cdk/test/utils/moto.ts` for AWS SDK mocking
 
 **Tests:**
 
-- [ ] T009 Write unit tests for configuration validation function in `cdk/test/unit/lambda/db-bootstrap/config.test.ts` verifying CloudFormation event parsing and validation
-- [ ] T010 Write unit tests for CloudFormation response handler utility in `cdk/test/unit/lambda/db-bootstrap/cfn-response-handler.test.ts` verifying CFN response sending
+- [X] T009 Write unit tests for configuration validation function in `cdk/test/unit/lambda/db-bootstrap/config.test.ts` verifying CloudFormation event parsing and validation
+- [X] T010 Write unit tests for CloudFormation response handler utility in `cdk/test/unit/lambda/db-bootstrap/cfn-response-handler.test.ts` verifying CFN response sending
 
 **Implementation:**
 
-- [ ] T011 Create base type definitions in `cdk/lib/lambda/db-bootstrap/types.ts` with ServiceConfig, ClientConfig, and database connection interfaces
-- [ ] T012 Create configuration validation function in `cdk/lib/lambda/db-bootstrap/config.ts` to parse CloudFormation event properties
-- [ ] T013 Create custom error classes in `cdk/lib/lambda/db-bootstrap/errors.ts` (BootstrapError, SchemaError, ConnectionError)
-- [ ] T014 Create CloudFormation response handler utility in `cdk/lib/lambda/db-bootstrap/cfn-response-handler.ts` for sending CFN responses
+- [X] T011 Create base type definitions in `cdk/lib/lambda/db-bootstrap/types.ts` with ServiceConfig, ClientConfig, and database connection interfaces
+- [X] T012 Create configuration validation function in `cdk/lib/lambda/db-bootstrap/config.ts` to parse CloudFormation event properties
+- [X] T013 Create custom error classes in `cdk/lib/lambda/db-bootstrap/errors.ts` (BootstrapError, SchemaError, ConnectionError)
+- [X] T014 Create CloudFormation response handler utility in `cdk/lib/lambda/db-bootstrap/cfn-response-handler.ts` for sending CFN responses
 
 ## Phase 3: User Story 1 - Deploy Secure Database Instance (P1)
 
