@@ -174,21 +174,21 @@ N/A
 
 **Tests:**
 
-- [ ] T027 [US2] Write unit tests for SchemaProvider in `cdk/test/unit/lambda/db-bootstrap/schema-provider.test.ts` using MockPool
-- [ ] T028 [US2] Write unit tests for DbBootstrapAgent in `cdk/test/unit/lambda/db-bootstrap/db-bootstrap-agent.test.ts` with mocked providers
-- [ ] T029 [US2] Write unit tests for handler in `cdk/test/unit/lambda/db-bootstrap/handler.test.ts` using Jest spies
-- [ ] T030 [US2] Write unit tests for DbConnectionProvider master credentials connection in `cdk/test/unit/lambda/db-bootstrap/db-connection-provider.test.ts` using MockPool
+- [X] T027 [US2] Write unit tests for SchemaProvider in `cdk/test/unit/lambda/db-bootstrap/schema-provider.test.ts` using MockPool
+- [X] T028 [US2] Write unit tests for DbBootstrapAgent in `cdk/test/unit/lambda/db-bootstrap/db-bootstrap-agent.test.ts` with mocked providers
+- [X] T029 [US2] Write unit tests for handler in `cdk/test/unit/lambda/db-bootstrap/handler.test.ts` using Jest spies
+- [X] T030 [US2] Write unit tests for DbConnectionProvider master credentials connection in `cdk/test/unit/lambda/db-bootstrap/db-connection-provider.test.ts` using MockPool
 
 **Implementation:**
 
-- [ ] T031 [US2] Create single schema SQL file in `cdk/lib/lambda/db-bootstrap/schema/schema.sql` containing all table definitions, indexes, constraints, and pgroonga extension
-- [ ] T032 [US2] Configure Lambda bundling to copy schema.sql file using afterBundling hook in `cdk/lib/constructs/database/database-construct.ts`
-- [ ] T033 [US2] Create DbConnectionProvider class in `cdk/lib/lambda/db-bootstrap/db-connection-provider.ts` for connection pool management with master credentials
-- [ ] T034 [US2] Create SchemaProvider class in `cdk/lib/lambda/db-bootstrap/schema-provider.ts` to execute schema.sql file from bundled schema directory
-- [ ] T035 [US2] Implement idempotent schema execution in `cdk/lib/lambda/db-bootstrap/schema-provider.ts` using IF NOT EXISTS patterns
-- [ ] T036 [US2] Create DbBootstrapAgent class in `cdk/lib/lambda/db-bootstrap/db-bootstrap-agent.ts` orchestrating schema bootstrap operations
-- [ ] T037 [US2] Create CloudFormation custom resource handler in `cdk/lib/lambda/db-bootstrap/handler.ts` with Create/Update/Delete operations
-- [ ] T038 [US2] Create Lambda function for bootstrap custom resource in `cdk/lib/constructs/database/database-construct.ts` with Node.js 22.x runtime and VPC configuration
+- [X] T031 [US2] Create single schema SQL file in `cdk/lib/lambda/db-bootstrap/schema/schema.sql` containing all table definitions, indexes, constraints, and pgroonga extension
+- [X] T032 [US2] Configure Lambda bundling to copy schema.sql file using afterBundling hook in `cdk/lib/constructs/database/database-construct.ts`
+- [X] T033 [US2] Create DbConnectionProvider class in `cdk/lib/lambda/db-bootstrap/db-connection-provider.ts` for connection pool management with master credentials
+- [X] T034 [US2] Create SchemaProvider class in `cdk/lib/lambda/db-bootstrap/schema-provider.ts` to execute schema.sql file from bundled schema directory
+- [X] T035 [US2] Implement idempotent schema execution in `cdk/lib/lambda/db-bootstrap/schema-provider.ts` using IF NOT EXISTS patterns
+- [X] T036 [US2] Create DbBootstrapAgent class in `cdk/lib/lambda/db-bootstrap/db-bootstrap-agent.ts` orchestrating schema bootstrap operations
+- [X] T037 [US2] Create CloudFormation custom resource handler in `cdk/lib/lambda/db-bootstrap/handler.ts` with Create/Update/Delete operations
+- [X] T038 [US2] Create Lambda function for bootstrap custom resource in `cdk/lib/constructs/database/database-construct.ts` with Node.js 22.x runtime and VPC configuration
 
 ## Phase 5: User Story 3 - Authenticate to Database Using IAM (P2)
 
