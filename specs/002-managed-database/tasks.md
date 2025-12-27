@@ -82,12 +82,12 @@ N/A
 
 **Implementation:**
 
-- [ ] T001 Create directory structure for database construct in `cdk/lib/constructs/database/`
-- [ ] T002 Create directory structure for bootstrap Lambda in `cdk/lib/lambda/db-bootstrap/`
-- [ ] T003 Create directory structure for unit tests in `cdk/test/unit/constructs/database/` and `cdk/test/unit/lambda/db-bootstrap/`
-- [ ] T004 Create directory structure for shared test utilities in `cdk/test/utils/`
-- [ ] T005 Install required npm dependencies: `@aws-sdk/client-rds`, `@aws-sdk/client-secrets-manager`, `@aws-sdk/rds-signer`, `pg`, `@types/pg` in `cdk/package.json`
-- [ ] T006 Create schema SQL directory structure in `cdk/lib/lambda/db-bootstrap/schema/` for schema.sql file
+- [X] T001 Create directory structure for database construct in `cdk/lib/constructs/database/`
+- [X] T002 Create directory structure for bootstrap Lambda in `cdk/lib/lambda/db-bootstrap/`
+- [X] T003 Create directory structure for unit tests in `cdk/test/unit/constructs/database/` and `cdk/test/unit/lambda/db-bootstrap/`
+- [X] T004 Create directory structure for shared test utilities in `cdk/test/utils/`
+- [X] T005 Install required npm dependencies: `@aws-sdk/client-rds`, `@aws-sdk/client-secrets-manager`, `@aws-sdk/rds-signer`, `pg`, `@types/pg` in `cdk/package.json`
+- [X] T006 Create schema SQL directory structure in `cdk/lib/lambda/db-bootstrap/schema/` for schema.sql file
 
 ## Phase 2: Foundational
 
