@@ -60,3 +60,5 @@ app-example
 x.py
 
 coverage/
+
+**/*.map
