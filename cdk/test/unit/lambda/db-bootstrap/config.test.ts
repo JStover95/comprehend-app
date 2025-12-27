@@ -69,7 +69,7 @@ describe("validateConfig", () => {
       expect(config.iamUser).toBe(IAM_USERNAME);
       expect(config.region).toBe(AWS_REGION);
       expect(config.environment).toBe("dev");
-      expect(config.clientConfig).toEqual({});
+      expect(config.clientConfig).toBeUndefined();
     });
 
     it("should parse configuration from environment variables", () => {
@@ -165,7 +165,7 @@ describe("validateConfig", () => {
       expect(config.environment).toBe("production");
     });
 
-    it("should include clientConfig when AWS_ENDPOINT_URL is set", () => {
+    it("should include clientConfig when all required env vars are set", () => {
       const event = mockCreateEvent();
       event.ResourceProperties = {
         ...event.ResourceProperties,
@@ -177,25 +177,47 @@ describe("validateConfig", () => {
 
       const config = validateConfig(event);
 
-      expect(config.clientConfig.endpoint).toBe(AWS_ENDPOINT);
-    });
-
-    it("should include credentials in clientConfig when AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set", () => {
-      const event = mockCreateEvent();
-      event.ResourceProperties = {
-        ...event.ResourceProperties,
-        SecretArn: SECRET_ARN,
-        ClusterEndpoint: CLUSTER_ENDPOINT,
-        DatabaseName: DB_NAME,
-        IamUser: IAM_USERNAME,
-      };
-
-      const config = validateConfig(event);
-
-      expect(config.clientConfig.credentials).toEqual({
+      expect(config.clientConfig).toBeDefined();
+      expect(config.clientConfig?.endpoint).toBe(AWS_ENDPOINT);
+      expect(config.clientConfig?.credentials).toEqual({
         accessKeyId: AWS_ACCESS_KEY_ID,
         secretAccessKey: AWS_SECRET_ACCESS_KEY,
       });
+    });
+
+    it("should not include clientConfig when only endpoint is set", () => {
+      delete process.env.AWS_ACCESS_KEY_ID;
+      delete process.env.AWS_SECRET_ACCESS_KEY;
+
+      const event = mockCreateEvent();
+      event.ResourceProperties = {
+        ...event.ResourceProperties,
+        SecretArn: SECRET_ARN,
+        ClusterEndpoint: CLUSTER_ENDPOINT,
+        DatabaseName: DB_NAME,
+        IamUser: IAM_USERNAME,
+      };
+
+      const config = validateConfig(event);
+
+      expect(config.clientConfig).toBeUndefined();
+    });
+
+    it("should not include clientConfig when only credentials are set", () => {
+      delete process.env.AWS_ENDPOINT_URL;
+
+      const event = mockCreateEvent();
+      event.ResourceProperties = {
+        ...event.ResourceProperties,
+        SecretArn: SECRET_ARN,
+        ClusterEndpoint: CLUSTER_ENDPOINT,
+        DatabaseName: DB_NAME,
+        IamUser: IAM_USERNAME,
+      };
+
+      const config = validateConfig(event);
+
+      expect(config.clientConfig).toBeUndefined();
     });
   });
 
