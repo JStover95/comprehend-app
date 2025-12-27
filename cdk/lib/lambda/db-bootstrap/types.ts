@@ -5,8 +5,8 @@
  * @param credentials - Optional explicit credentials for testing
  */
 export interface ClientConfig {
-  endpoint?: string;
-  credentials?: {
+  endpoint: string;
+  credentials: {
     accessKeyId: string;
     secretAccessKey: string;
   };
@@ -51,6 +51,5 @@ export interface ServiceConfig {
   iamUser: string;
   region: string;
   environment: string;
-  clientConfig: ClientConfig;
+  clientConfig?: ClientConfig;
 }
-

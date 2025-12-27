@@ -62,19 +62,19 @@ export function validateConfig(
     );
   }
 
-  // Build client configuration for AWS SDK
-  const clientConfig: ClientConfig = {};
-
-  // Override endpoint for local testing (LocalStack)
-  if (process.env.AWS_ENDPOINT_URL) {
-    clientConfig.endpoint = process.env.AWS_ENDPOINT_URL;
-  }
-
-  // Override credentials for local testing
-  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-    clientConfig.credentials = {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  // Build client configuration for AWS SDK (only if both endpoint and credentials are provided)
+  let clientConfig: ClientConfig | undefined;
+  if (
+    process.env.AWS_ENDPOINT_URL &&
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY
+  ) {
+    clientConfig = {
+      endpoint: process.env.AWS_ENDPOINT_URL,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
     };
   }
 
