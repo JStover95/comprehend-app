@@ -2,6 +2,10 @@ import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
+import * as customResources from "aws-cdk-lib/custom-resources";
+import * as path from "path";
 import { Construct } from "constructs";
 import { EnvironmentConfig } from "../../types";
 
@@ -220,6 +224,87 @@ export class DatabaseConstruct extends Construct {
       "ManagedBy",
       environmentConfig.tags.ManagedBy,
     );
+
+    // Create Lambda function for database bootstrap custom resource
+    const bootstrapFunction = new lambdaNodejs.NodejsFunction(
+      this,
+      "BootstrapFunction",
+      {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        handler: "handler",
+        entry: path.join(__dirname, "../../lambda/db-bootstrap/handler.ts"),
+        timeout: cdk.Duration.minutes(5),
+        memorySize: 256,
+        bundling: {
+          // minify: false,
+          // sourceMap: true,
+          // target: "node22",
+          // format: lambdaNodejs.OutputFormat.CJS,
+          commandHooks: {
+            beforeBundling: () => [],
+            beforeInstall: () => [],
+            afterBundling: (inputDir: string, outputDir: string) => {
+              // Copy schema.sql file to Lambda package
+              // The inputDir is the project root, outputDir is the Lambda package directory
+              const schemaSource = path.join(
+                inputDir,
+                "lib",
+                "lambda",
+                "db-bootstrap",
+                "schema",
+                "schema.sql",
+              );
+              const schemaDestDir = path.join(outputDir, "schema");
+              const schemaDest = path.join(schemaDestDir, "schema.sql");
+              return [
+                `mkdir -p "${schemaDestDir}"`,
+                `cp "${schemaSource}" "${schemaDest}"`,
+              ];
+            },
+          },
+        },
+        vpc,
+        vpcSubnets: {
+          subnets: privateSubnets,
+        },
+        securityGroups: [this.securityGroup],
+        environment: {
+          SECRET_ARN: this.secret.secretArn,
+          CLUSTER_ENDPOINT: this.cluster.clusterEndpoint.hostname,
+          CLUSTER_PORT: this.cluster.clusterEndpoint.port.toString(),
+          DATABASE_NAME: "postgres",
+          IAM_USER: this.iamUser,
+          ENVIRONMENT: environmentConfig.name,
+        },
+      },
+    );
+
+    // Grant Lambda permissions to read secret
+    this.secret.grantRead(bootstrapFunction);
+
+    // Grant Lambda permissions to connect to database (VPC access)
+    // The Lambda is already in the VPC with access to the security group
+
+    // Create CloudFormation custom resource
+    const bootstrapProvider = new customResources.Provider(
+      this,
+      "BootstrapProvider",
+      {
+        onEventHandler: bootstrapFunction,
+      },
+    );
+
+    new cdk.CustomResource(this, "BootstrapResource", {
+      serviceToken: bootstrapProvider.serviceToken,
+      properties: {
+        SecretArn: this.secret.secretArn,
+        ClusterEndpoint: this.cluster.clusterEndpoint.hostname,
+        ClusterPort: this.cluster.clusterEndpoint.port.toString(),
+        DatabaseName: "postgres",
+        IamUser: this.iamUser,
+        Environment: environmentConfig.name,
+      },
+    });
 
     // Export stack outputs
     new cdk.CfnOutput(this, "DatabaseEndpoint", {

@@ -258,6 +258,155 @@ describe("DatabaseConstruct", () => {
     });
   });
 
+  describe("Database bootstrap Lambda function", () => {
+    it("creates Lambda function with Node.js 22.x runtime", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties("AWS::Lambda::Function", {
+        Runtime: "nodejs22.x",
+        Handler: "index.handler",
+        Timeout: 300, // 5 minutes
+        MemorySize: 256,
+      });
+    });
+
+    it("configures Lambda function in VPC with database security group", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties("AWS::Lambda::Function", {
+        VpcConfig: {
+          SubnetIds: Match.anyValue(),
+          SecurityGroupIds: Match.anyValue(),
+        },
+      });
+    });
+
+    it("sets Lambda environment variables with database configuration", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      // Find the bootstrap function (not the provider framework function)
+      const lambdaFunctions = template.findResources("AWS::Lambda::Function");
+      const bootstrapFunction = Object.values(lambdaFunctions).find(
+        (func: any) =>
+          func.Properties?.Handler === "index.handler" &&
+          func.Properties?.Environment?.Variables?.SECRET_ARN,
+      );
+
+      expect(bootstrapFunction).toBeDefined();
+      if (bootstrapFunction) {
+        const variables = bootstrapFunction.Properties.Environment.Variables;
+        // Check that all required environment variables are present
+        expect(variables.SECRET_ARN).toBeDefined();
+        expect(variables.CLUSTER_ENDPOINT).toBeDefined();
+        expect(variables.CLUSTER_PORT).toBeDefined();
+        expect(variables.DATABASE_NAME).toBe("postgres");
+        expect(variables.IAM_USER).toBe("db_service_user");
+        expect(variables.ENVIRONMENT).toBe("dev");
+      }
+    });
+
+    it("grants Lambda function permission to read secret", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      // Verify IAM policy allows secretsmanager:GetSecretValue
+      template.hasResourceProperties("AWS::IAM::Policy", {
+        PolicyDocument: {
+          Statement: Match.arrayWith([
+            Match.objectLike({
+              Effect: "Allow",
+              Action: Match.arrayWith([
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ]),
+              Resource: Match.anyValue(),
+            }),
+          ]),
+        },
+      });
+    });
+  });
+
+  describe("Database bootstrap custom resource", () => {
+    it("creates CloudFormation custom resource for schema bootstrap", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      template.resourceCountIs("AWS::CloudFormation::CustomResource", 1);
+    });
+
+    it("configures custom resource with database properties", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties("AWS::CloudFormation::CustomResource", {
+        ServiceToken: Match.anyValue(),
+        SecretArn: Match.anyValue(),
+        ClusterEndpoint: Match.anyValue(),
+        ClusterPort: Match.anyValue(), // CloudFormation intrinsic function
+        DatabaseName: "postgres",
+        IamUser: "db_service_user",
+        Environment: "dev",
+      });
+    });
+
+    it("creates custom resource provider", () => {
+      // Arrange & Act
+      new DatabaseConstruct(stack, "Database", {
+        vpc,
+        privateSubnets,
+        environmentConfig: devConfig,
+      });
+
+      // Assert
+      const template = Template.fromStack(stack);
+      // Custom resource provider creates a Lambda function for handling events
+      // We verify it exists by checking that there are at least 2 Lambda functions
+      // (one for bootstrap, one for the provider's onEventHandler)
+      const lambdaFunctions = template.findResources("AWS::Lambda::Function");
+      expect(Object.keys(lambdaFunctions).length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
   describe("Stack outputs", () => {
     it("exports database endpoint, port, secret ARN, and IAM user", () => {
       // Arrange & Act
