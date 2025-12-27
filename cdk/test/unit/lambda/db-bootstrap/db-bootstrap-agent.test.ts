@@ -86,6 +86,30 @@ class MockSchemaProvider {
   }
 }
 
+class MockDbCredentialsProvider {
+  private mockToken = "test-iam-auth-token";
+  private shouldFail = false;
+  private error?: Error;
+
+  withToken(token: string): this {
+    this.mockToken = token;
+    return this;
+  }
+
+  withError(error: Error): this {
+    this.shouldFail = true;
+    this.error = error;
+    return this;
+  }
+
+  async createIamAuthToken(): Promise<string> {
+    if (this.shouldFail) {
+      throw this.error || new ConnectionError("Failed to generate token");
+    }
+    return this.mockToken;
+  }
+}
+
 // ==========================================
 // Tests
 // ==========================================
@@ -423,6 +447,158 @@ describe("DbBootstrapAgent", () => {
       expect(mockSendFailure).not.toHaveBeenCalled();
       // Verify bootstrap was not called
       expect(mockPool.getCapturedQueries().length).toBe(0);
+    });
+  });
+
+  describe("IAM user creation and connection test", () => {
+    let mockCredentialsProvider: MockDbCredentialsProvider;
+    let mockIamPool: MockPool;
+
+    beforeEach(() => {
+      mockCredentialsProvider = new MockDbCredentialsProvider();
+      mockIamPool = new MockPool();
+    });
+
+    it("should create IAM database user during bootstrap", async () => {
+      // Arrange
+      mockPool.withDefaultResponse({ rows: [], rowCount: 0 });
+      mockIamPool.withDefaultResponse({ rows: [], rowCount: 0 });
+      mockCredentialsProvider.withToken("test-token");
+
+      // Create a connection provider that can create IAM pools
+      class MockConnectionProviderWithIam extends MockDbConnectionProvider {
+        createIamPool(_authToken: string): Pool {
+          return asMockPool(mockIamPool);
+        }
+      }
+
+      const connectionProviderWithIam = new MockConnectionProviderWithIam(
+        mockPool,
+      );
+
+      const agent = new DbBootstrapAgent(
+        baseConfig,
+        connectionProviderWithIam as any,
+        mockSchemaProvider as any,
+        mockCredentialsProvider as any,
+      );
+
+      // Act
+      await agent.bootstrap();
+
+      // Assert
+      // Verify that CREATE USER query was executed
+      // The username is passed as a parameter, not in the SQL string
+      const queries = mockPool.getCapturedQueries();
+      const createUserQuery = queries.find((q) =>
+        q.sql.includes("CREATE USER"),
+      );
+      expect(createUserQuery).toBeDefined();
+      // Check that the username is in the query parameters
+      expect(createUserQuery?.params).toBeDefined();
+      expect(createUserQuery?.params?.[0]).toBe(baseConfig.iamUser);
+    });
+
+    it("should test IAM connection after schema creation", async () => {
+      // Arrange
+      mockPool.withDefaultResponse({ rows: [], rowCount: 0 });
+      mockIamPool.withDefaultResponse({ rows: [{ test: 1 }], rowCount: 1 });
+      mockCredentialsProvider.withToken("test-token");
+
+      class MockConnectionProviderWithIam extends MockDbConnectionProvider {
+        createIamPool(_authToken: string): Pool {
+          return asMockPool(mockIamPool);
+        }
+      }
+
+      const connectionProviderWithIam = new MockConnectionProviderWithIam(
+        mockPool,
+      );
+
+      const agent = new DbBootstrapAgent(
+        baseConfig,
+        connectionProviderWithIam as any,
+        mockSchemaProvider as any,
+        mockCredentialsProvider as any,
+      );
+
+      // Act
+      await agent.bootstrap();
+
+      // Assert
+      // Verify IAM pool was created and used for connection test
+      // The IAM connection test should execute a simple query
+      const iamQueries = mockIamPool.getCapturedQueries();
+      expect(iamQueries.length).toBeGreaterThan(0);
+      // Verify pool was closed
+      expect(mockIamPool.wasEndCalled()).toBe(true);
+    });
+
+    it("should handle IAM token generation failure", async () => {
+      // Arrange
+      mockPool.withDefaultResponse({ rows: [], rowCount: 0 });
+      const tokenError = new ConnectionError("Failed to generate IAM token");
+      mockCredentialsProvider.withError(tokenError);
+
+      class MockConnectionProviderWithIam extends MockDbConnectionProvider {
+        createIamPool(_authToken: string): Pool {
+          throw tokenError;
+        }
+      }
+
+      const connectionProviderWithIam = new MockConnectionProviderWithIam(
+        mockPool,
+      );
+
+      const agent = new DbBootstrapAgent(
+        baseConfig,
+        connectionProviderWithIam as any,
+        mockSchemaProvider as any,
+        mockCredentialsProvider as any,
+      );
+
+      // Act & Assert
+      // Bootstrap should fail when IAM connection test fails
+      // This ensures we catch IAM authentication issues during deployment
+      await expect(agent.bootstrap()).rejects.toThrow();
+    });
+
+    it("should create IAM user idempotently (IF NOT EXISTS)", async () => {
+      // Arrange
+      mockPool.withDefaultResponse({ rows: [], rowCount: 0 });
+      mockIamPool.withDefaultResponse({ rows: [], rowCount: 0 });
+      mockCredentialsProvider.withToken("test-token");
+
+      class MockConnectionProviderWithIam extends MockDbConnectionProvider {
+        createIamPool(_authToken: string): Pool {
+          return asMockPool(mockIamPool);
+        }
+      }
+
+      const connectionProviderWithIam = new MockConnectionProviderWithIam(
+        mockPool,
+      );
+
+      const agent = new DbBootstrapAgent(
+        baseConfig,
+        connectionProviderWithIam as any,
+        mockSchemaProvider as any,
+        mockCredentialsProvider as any,
+      );
+
+      // Act - Run bootstrap twice
+      await agent.bootstrap();
+      mockPool.clearCapturedQueries();
+      await agent.bootstrap();
+
+      // Assert
+      // Verify CREATE USER was called both times
+      // (idempotent, so it should not fail if user already exists)
+      const queries = mockPool.getCapturedQueries();
+      const createUserQueries = queries.filter((q) =>
+        q.sql.includes("CREATE USER"),
+      );
+      expect(createUserQueries.length).toBeGreaterThan(0);
     });
   });
 });
