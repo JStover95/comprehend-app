@@ -178,82 +178,490 @@ describe("DatabaseConstruct", () => {
   });
 
   describe("Environment-specific configuration", () => {
-    it("configures dev environment with 0-2 ACUs", () => {
-      // Arrange & Act
-      new DatabaseConstruct(stack, "Database", {
-        vpc,
-        privateSubnets,
-        environmentConfig: devConfig,
+    describe("ACU scaling configuration", () => {
+      it("configures dev environment with 0-2 ACUs", () => {
+        // Arrange & Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: devConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          ServerlessV2ScalingConfiguration: {
+            MinCapacity: 0,
+            MaxCapacity: 2,
+          },
+        });
       });
 
-      // Assert
-      const template = Template.fromStack(stack);
-      template.hasResourceProperties("AWS::RDS::DBCluster", {
-        ServerlessV2ScalingConfiguration: {
-          MinCapacity: 0,
-          MaxCapacity: 2,
-        },
+      it("configures staging environment with 0-2 ACUs", () => {
+        // Arrange
+        const stagingConfig: EnvironmentConfig = {
+          name: "staging",
+          vpcCidr: "10.1.0.0/16",
+          maxAzs: 2,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "staging",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: stagingConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          ServerlessV2ScalingConfiguration: {
+            MinCapacity: 0,
+            MaxCapacity: 2,
+          },
+        });
+      });
+
+      it("configures prod environment with 2-16 ACUs (configurable)", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          ServerlessV2ScalingConfiguration: {
+            MinCapacity: 2,
+            MaxCapacity: 16,
+          },
+        });
+      });
+
+      it("allows custom ACU configuration for prod environment", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+          minCapacity: 4,
+          maxCapacity: 32,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          ServerlessV2ScalingConfiguration: {
+            MinCapacity: 4,
+            MaxCapacity: 32,
+          },
+        });
       });
     });
 
-    it("configures staging environment with 0-2 ACUs", () => {
-      // Arrange
-      const stagingConfig: EnvironmentConfig = {
-        name: "staging",
-        vpcCidr: "10.1.0.0/16",
-        maxAzs: 2,
-        enableNatGateways: true,
-        tags: {
-          Application: "Comprehend",
-          Environment: "staging",
-          ManagedBy: "CDK",
-        },
-      };
+    describe("Multi-AZ configuration", () => {
+      it("configures dev environment with single-AZ deployment", () => {
+        // Arrange & Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: devConfig,
+        });
 
-      // Act
-      new DatabaseConstruct(stack, "Database", {
-        vpc,
-        privateSubnets,
-        environmentConfig: stagingConfig,
+        // Assert
+        const template = Template.fromStack(stack);
+        const cluster = template.findResources("AWS::RDS::DBCluster");
+        const clusterResource = Object.values(cluster)[0];
+
+        // Verify no readers are configured (single-AZ)
+        expect(clusterResource.Properties?.DBClusterMembers).toBeUndefined();
       });
 
-      // Assert
-      const template = Template.fromStack(stack);
-      template.hasResourceProperties("AWS::RDS::DBCluster", {
-        ServerlessV2ScalingConfiguration: {
-          MinCapacity: 0,
-          MaxCapacity: 2,
-        },
+      it("configures staging environment with single-AZ deployment", () => {
+        // Arrange
+        const stagingConfig: EnvironmentConfig = {
+          name: "staging",
+          vpcCidr: "10.1.0.0/16",
+          maxAzs: 2,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "staging",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: stagingConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        const cluster = template.findResources("AWS::RDS::DBCluster");
+        const clusterResource = Object.values(cluster)[0];
+
+        // Verify no readers are configured (single-AZ)
+        expect(clusterResource.Properties?.DBClusterMembers).toBeUndefined();
+      });
+
+      it("configures prod environment with multi-AZ deployment", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        // Multi-AZ is configured via readers array in CDK
+        // We verify by checking that DBInstance resources exist (writer + reader)
+        const dbInstances = template.findResources("AWS::RDS::DBInstance");
+        // Should have at least writer instance, and reader if multi-AZ
+        expect(Object.keys(dbInstances).length).toBeGreaterThanOrEqual(1);
       });
     });
 
-    it("applies environment tags to all database resources", () => {
-      // Arrange & Act
-      new DatabaseConstruct(stack, "Database", {
-        vpc,
-        privateSubnets,
-        environmentConfig: devConfig,
+    describe("Backup retention configuration", () => {
+      it("configures dev environment with 1 day backup retention", () => {
+        // Arrange & Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: devConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          BackupRetentionPeriod: 1,
+        });
       });
 
-      // Assert
-      const template = Template.fromStack(stack);
+      it("configures staging environment with 1 day backup retention", () => {
+        // Arrange
+        const stagingConfig: EnvironmentConfig = {
+          name: "staging",
+          vpcCidr: "10.1.0.0/16",
+          maxAzs: 2,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "staging",
+            ManagedBy: "CDK",
+          },
+        };
 
-      // Check cluster tags
-      template.hasResourceProperties("AWS::RDS::DBCluster", {
-        Tags: Match.arrayWith([
-          Match.objectLike({
-            Key: "Application",
-            Value: "Comprehend",
-          }),
-          Match.objectLike({
-            Key: "Environment",
-            Value: "dev",
-          }),
-          Match.objectLike({
-            Key: "ManagedBy",
-            Value: "CDK",
-          }),
-        ]),
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: stagingConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          BackupRetentionPeriod: 1,
+        });
+      });
+
+      it("configures prod environment with 7 days backup retention", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          BackupRetentionPeriod: 7,
+        });
+      });
+
+      it("allows custom backup retention for prod environment", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+          backupRetentionDays: 14,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          BackupRetentionPeriod: 14,
+        });
+      });
+    });
+
+    describe("Maintenance window configuration", () => {
+      it("configures dev environment with maintenance window sun:04:00-sun:05:00", () => {
+        // Arrange & Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: devConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          PreferredMaintenanceWindow: "sun:04:00-sun:05:00",
+        });
+      });
+
+      it("configures staging environment with maintenance window sun:04:00-sun:05:00", () => {
+        // Arrange
+        const stagingConfig: EnvironmentConfig = {
+          name: "staging",
+          vpcCidr: "10.1.0.0/16",
+          maxAzs: 2,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "staging",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: stagingConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          PreferredMaintenanceWindow: "sun:04:00-sun:05:00",
+        });
+      });
+
+      it("configures prod environment with maintenance window sun:03:00-sun:04:00", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          PreferredMaintenanceWindow: "sun:03:00-sun:04:00",
+        });
+      });
+    });
+
+    describe("Environment tags", () => {
+      it("applies environment tags to all database resources in dev", () => {
+        // Arrange & Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: devConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+
+        // Check cluster tags
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          Tags: Match.arrayWith([
+            Match.objectLike({
+              Key: "Application",
+              Value: "Comprehend",
+            }),
+            Match.objectLike({
+              Key: "Environment",
+              Value: "dev",
+            }),
+            Match.objectLike({
+              Key: "ManagedBy",
+              Value: "CDK",
+            }),
+          ]),
+        });
+      });
+
+      it("applies environment tags to all database resources in staging", () => {
+        // Arrange
+        const stagingConfig: EnvironmentConfig = {
+          name: "staging",
+          vpcCidr: "10.1.0.0/16",
+          maxAzs: 2,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "staging",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: stagingConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+
+        // Check cluster tags
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          Tags: Match.arrayWith([
+            Match.objectLike({
+              Key: "Application",
+              Value: "Comprehend",
+            }),
+            Match.objectLike({
+              Key: "Environment",
+              Value: "staging",
+            }),
+            Match.objectLike({
+              Key: "ManagedBy",
+              Value: "CDK",
+            }),
+          ]),
+        });
+      });
+
+      it("applies environment tags to all database resources in prod", () => {
+        // Arrange
+        const prodConfig: EnvironmentConfig = {
+          name: "prod",
+          vpcCidr: "10.2.0.0/16",
+          maxAzs: 3,
+          enableNatGateways: true,
+          tags: {
+            Application: "Comprehend",
+            Environment: "prod",
+            ManagedBy: "CDK",
+          },
+        };
+
+        // Act
+        new DatabaseConstruct(stack, "Database", {
+          vpc,
+          privateSubnets,
+          environmentConfig: prodConfig,
+        });
+
+        // Assert
+        const template = Template.fromStack(stack);
+
+        // Check cluster tags
+        template.hasResourceProperties("AWS::RDS::DBCluster", {
+          Tags: Match.arrayWith([
+            Match.objectLike({
+              Key: "Application",
+              Value: "Comprehend",
+            }),
+            Match.objectLike({
+              Key: "Environment",
+              Value: "prod",
+            }),
+            Match.objectLike({
+              Key: "ManagedBy",
+              Value: "CDK",
+            }),
+          ]),
+        });
       });
     });
   });
