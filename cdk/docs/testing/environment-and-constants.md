@@ -69,32 +69,28 @@ describe("MyAgent", () => {
 // Test Configuration Constants
 // ==========================================
 
-// AWS Configuration
 const AWS_ENDPOINT = "http://localhost:5000";
-const AWS_REGION = "us-east-1";
+const AWS_DEFAULT_REGION = "us-east-1";
 const AWS_ACCESS_KEY_ID = "testing";
 const AWS_SECRET_ACCESS_KEY = "testing";
+const AWS_REGION = "us-east-1";
+const AWS_ACCOUNT_ID = "123456789012";
+const SECRET_NAME = "test-secret";
+const SECRET_ARN = `arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:${SECRET_NAME}`;
+const CLUSTER_ENDPOINT = "test-cluster.cluster-123.us-east-1.rds.amazonaws.com";
+const DB_NAME = "test_user";
+const IAM_USERNAME = "test_user_iam";
 
-// Database Configuration
-const DB_HOST = "localhost";
-const DB_PORT = 5432;
-const DB_NAME = "test_db";
-const DB_SECRET_ARN =
-  "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-secret";
-
-// Test Data
-const TEST_USER_ID = "user-123";
-const TEST_TIMESTAMP = "2024-01-01T00:00:00Z";
-
-// Set up environment
+// Set up environment variables for testing with LocalStack
 process.env.AWS_ENDPOINT_URL = AWS_ENDPOINT;
-process.env.AWS_REGION = AWS_REGION;
+process.env.AWS_DEFAULT_REGION = AWS_DEFAULT_REGION;
 process.env.AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID;
 process.env.AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY;
-process.env.DB_SECRET_ARN = DB_SECRET_ARN;
-process.env.DB_HOST = DB_HOST;
-process.env.DB_PORT = String(DB_PORT);
+process.env.AWS_REGION = AWS_REGION;
+process.env.SECRET_ARN = SECRET_ARN;
+process.env.CLUSTER_ENDPOINT = CLUSTER_ENDPOINT;
 process.env.DB_NAME = DB_NAME;
+process.env.IAM_USERNAME = IAM_USERNAME;
 
 // ==========================================
 // Tests
@@ -104,6 +100,13 @@ describe("DatabaseAgent", () => {
   // Tests go here
 });
 ```
+
+**Key Points:**
+
+- Use constants to build ARNs dynamically (e.g., `SECRET_ARN` from `AWS_REGION`, `AWS_ACCOUNT_ID`, and `SECRET_NAME`)
+- Set all environment variables at the top of the file before any imports that might use them
+- Use descriptive constant names that match the environment variable names where applicable
+- Group related constants together (AWS config, database config, etc.)
 
 ## Common Patterns
 

@@ -157,11 +157,9 @@ Guidelines for defining types and managing configuration.
 ### For Writing Tests
 
 1. **Set up test configuration** ([Environment Variables and Constants](./testing/environment-and-constants.md))
-
-   ```typescript
-   const AWS_ENDPOINT = "http://localhost:5000";
-   process.env.AWS_ENDPOINT_URL = AWS_ENDPOINT;
-   ```
+   - Declare all test constants at the top of the file
+   - Set environment variables for LocalStack testing
+   - Use constants to build ARNs dynamically
 
 2. **Create mocks based on I/O patterns** ([Decision Guide](./testing/decision-guide.md))
    - Factory for I/O classes
