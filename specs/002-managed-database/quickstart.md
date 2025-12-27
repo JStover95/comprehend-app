@@ -57,26 +57,85 @@ export class MyStack extends cdk.Stack {
 
 ## Configuration Options
 
-### Environment-Specific Scaling
+### Environment-Specific Configurations
+
+The database construct automatically applies environment-specific configurations based on the `environmentConfig.name` value. You can override these defaults by providing explicit props.
+
+#### Development Environment
+
+Development uses cost-optimized settings: minimal ACU scaling, single-AZ deployment, and shorter backup retention.
 
 ```typescript
 const database = new DatabaseConstruct(this, 'Database', {
   vpc: vpcConstruct.vpc,
   privateSubnets: vpcConstruct.privateSubnets,
   environmentConfig: {
-    name: 'dev', // or 'staging', 'prod'
-    // ... other config
+    name: 'dev',
+    vpcCidr: '10.0.0.0/16',
+    maxAzs: 2,
+    enableNatGateways: false,
+    tags: {
+      Application: 'Comprehend',
+      Environment: 'dev',
+      ManagedBy: 'CDK',
+    },
   },
-  // Development: minimal scaling (0.5-2 ACUs)
-  minCapacity: 0.5,
-  maxCapacity: 2,
-  // Production: appropriate scaling
-  // minCapacity: 2,
-  // maxCapacity: 16,
+  // Defaults (can be overridden):
+  // minCapacity: 0 (ACUs)
+  // maxCapacity: 2 (ACUs)
+  // multiAz: false (single-AZ)
+  // backupRetentionDays: 1
+  // Maintenance window: sun:04:00-sun:05:00
 });
 ```
 
-### Multi-AZ Deployment (Production)
+**Development Configuration:**
+
+- **ACU Scaling**: 0-2 ACUs (scales to zero when idle)
+- **Multi-AZ**: Single-AZ deployment (cost optimization)
+- **Backup Retention**: 1 day
+- **Maintenance Window**: Sunday 04:00-05:00 UTC
+- **Deletion Protection**: Disabled
+
+#### Staging Environment
+
+Staging uses the same cost-optimized settings as development for consistency and cost efficiency.
+
+```typescript
+const database = new DatabaseConstruct(this, 'Database', {
+  vpc: vpcConstruct.vpc,
+  privateSubnets: vpcConstruct.privateSubnets,
+  environmentConfig: {
+    name: 'staging',
+    vpcCidr: '10.1.0.0/16',
+    maxAzs: 2,
+    enableNatGateways: true,
+    tags: {
+      Application: 'Comprehend',
+      Environment: 'staging',
+      ManagedBy: 'CDK',
+    },
+  },
+  // Defaults (can be overridden):
+  // minCapacity: 0 (ACUs)
+  // maxCapacity: 2 (ACUs)
+  // multiAz: false (single-AZ)
+  // backupRetentionDays: 1
+  // Maintenance window: sun:04:00-sun:05:00
+});
+```
+
+**Staging Configuration:**
+
+- **ACU Scaling**: 0-2 ACUs (scales to zero when idle)
+- **Multi-AZ**: Single-AZ deployment (cost optimization)
+- **Backup Retention**: 1 day
+- **Maintenance Window**: Sunday 04:00-05:00 UTC
+- **Deletion Protection**: Disabled
+
+#### Production Environment
+
+Production uses high-availability settings: appropriate ACU scaling, multi-AZ deployment, and longer backup retention.
 
 ```typescript
 const database = new DatabaseConstruct(this, 'Database', {
@@ -84,12 +143,48 @@ const database = new DatabaseConstruct(this, 'Database', {
   privateSubnets: vpcConstruct.privateSubnets,
   environmentConfig: {
     name: 'prod',
-    // ... other config
+    vpcCidr: '10.2.0.0/16',
+    maxAzs: 3,
+    enableNatGateways: true,
+    tags: {
+      Application: 'Comprehend',
+      Environment: 'prod',
+      ManagedBy: 'CDK',
+    },
   },
-  // Enable multi-AZ for high availability
-  multiAz: true,
-  minCapacity: 2,
-  maxCapacity: 16,
+  // Defaults (can be overridden):
+  // minCapacity: 2 (ACUs)
+  // maxCapacity: 16 (ACUs)
+  // multiAz: true (multi-AZ for HA)
+  // backupRetentionDays: 7
+  // Maintenance window: sun:03:00-sun:04:00 UTC
+});
+```
+
+**Production Configuration:**
+
+- **ACU Scaling**: 2-16 ACUs (configurable, defaults shown)
+- **Multi-AZ**: Multi-AZ deployment (high availability)
+- **Backup Retention**: 7 days minimum (configurable)
+- **Maintenance Window**: Sunday 03:00-04:00 UTC
+- **Deletion Protection**: Enabled
+- **Performance Insights**: Enabled
+
+### Custom Configuration Overrides
+
+You can override any environment-specific defaults by providing explicit props:
+
+```typescript
+// Production with custom scaling
+const database = new DatabaseConstruct(this, 'Database', {
+  vpc: vpcConstruct.vpc,
+  privateSubnets: vpcConstruct.privateSubnets,
+  environmentConfig: prodConfig,
+  // Override defaults
+  minCapacity: 4,              // Custom minimum ACUs
+  maxCapacity: 32,             // Custom maximum ACUs
+  multiAz: true,               // Explicitly enable multi-AZ
+  backupRetentionDays: 14,     // Custom backup retention
 });
 ```
 
@@ -259,4 +354,3 @@ The bootstrap process is idempotent. If you see "already exists" errors, the boo
 2. Review [research.md](./research.md) for technical decisions
 3. Implement application code using IAM authentication pattern
 4. Set up monitoring and alerts for database metrics
-
