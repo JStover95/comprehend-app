@@ -1,48 +1,46 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Managed Database Infrastructure
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `002-managed-database` | **Date**: December 23, 2025 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/002-managed-database/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Deploy a secure, managed Aurora PostgreSQL database with automatic schema bootstrap. The database will use Aurora Serverless V2 for cost-effective scaling, IAM authentication for services, and a CloudFormation custom resource to automatically initialize the schema, indexes, and IAM database user. Master credentials will be managed via Secrets Manager and only used when IAM authentication is not possible (e.g., during bootstrap).
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript 5.x (strict mode)  
+**Primary Dependencies**: AWS CDK v2, aws-cdk-lib (RDS, Lambda, Secrets Manager, IAM), pg (PostgreSQL client), @aws-sdk/rds-signer (IAM auth tokens)  
+**Storage**: Amazon Aurora PostgreSQL 17.x (Serverless V2), Secrets Manager (master credentials)  
+**Testing**: Jest, aws-cdk-lib/assertions, moto (AWS SDK mocking), MockPool factory pattern  
+**Target Platform**: AWS Lambda (Node.js 20.x runtime) for bootstrap, Aurora Serverless V2 for database  
+**Project Type**: Infrastructure (CDK construct + Lambda custom resource)  
+**Performance Goals**: Database supports 100+ concurrent connections, Aurora Serverless V2 scales 0-2 ACUs (dev) to production capacity automatically  
+**Constraints**: Database must be in private subnet, no public access, IAM authentication required for services, bootstrap must be idempotent, environment-specific scaling (dev: 0-2 ACUs, prod: multi-AZ)  
+**Scale/Scope**: Single database construct, CloudFormation custom resource Lambda, schema initialization for 6 tables + indexes + constraints, IAM database user creation, pgroonga extension installation
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 | Principle | Compliance | Notes |
-| ----------- | ------------ | ------- |
-| I. Testing-First | ☐ Pending | Test strategy defined in Technical Context |
-| II. Accessibility-First | ☐ N/A or Pending | Required for `comprehend/` UI features |
-| III. Modular Architecture | ☐ Pending | Agent/Context patterns followed |
-| IV. Design Doc Adherence | ☐ Pending | Relevant docs identified and reviewed |
-| V. Type Safety | ☐ Pending | Strict TypeScript enabled |
+|-----------|------------|-------|
+| I. Testing-First | ✅ Compliant | Unit tests with MockPool factory, moto for AWS SDK mocking, no integration tests required per plan-prompt |
+| II. Accessibility-First | ✅ N/A | Infrastructure feature, no user-facing UI |
+| III. Modular Architecture | ✅ Compliant | Agent pattern (Handler → Agent → Provider), separation of concerns (DbCredentialsProvider, DbConnectionProvider) |
+| IV. Design Doc Adherence | ✅ Compliant | Following agent-pattern.md, types-and-configuration.md, testing patterns from cdk/docs/ |
+| V. Type Safety | ✅ Compliant | Strict TypeScript enabled, explicit types for all interfaces |
 
 **Design Docs to Review:**
 
-- Backend (`cdk/`): [List applicable docs from `cdk/docs/`]
-- Frontend (`comprehend/`): [List applicable docs from `comprehend/docs/`]
+- Backend (`cdk/`): 
+  - `agent-pattern.md` - CloudFormation custom resource handler pattern
+  - `types-and-configuration.md` - Configuration structure with clientConfig
+  - `testing/` - Mocking strategies (factory pattern, moto, MockPool)
+  - `design-docs.md` - Database connection pattern (DbCredentialsProvider, DbConnectionProvider)
+- Frontend (`comprehend/`): N/A (infrastructure feature)
 
 ## Project Structure
 
@@ -59,57 +57,49 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+cdk/
+├── lib/
+│   ├── constructs/
+│   │   └── database/
+│   │       └── database-construct.ts          # Aurora PostgreSQL construct
+│   └── lambda/
+│       └── db-bootstrap/
+│           ├── handler.ts                      # CloudFormation custom resource handler
+│           ├── db-bootstrap-agent.ts           # Bootstrap orchestration agent
+│           ├── db-credentials-provider.ts      # IAM auth token generation
+│           ├── db-connection-provider.ts         # Connection pool management
+│           ├── schema-provider.ts               # Schema SQL execution
+│           ├── types.ts                         # Type definitions
+│           ├── config.ts                        # Configuration validation
+│           ├── errors.ts                        # Custom error classes
+│           └── cfn-response-handler.ts         # CloudFormation response utility
+│
+└── test/
+    ├── unit/
+    │   ├── constructs/
+    │   │   └── database/
+    │   │       └── database-construct.test.ts  # Construct unit tests
+    │   └── lambda/
+    │       └── db-bootstrap/
+    │           ├── handler.test.ts             # Handler tests (spies)
+    │           ├── db-bootstrap-agent.test.ts   # Agent tests
+    │           ├── db-credentials-provider.test.ts
+    │           ├── db-connection-provider.test.ts
+    │           └── schema-provider.test.ts
+    └── utils/
+        ├── mock-pool.ts                         # Shared MockPool factory
+        └── moto.ts                              # Moto reset utility
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Infrastructure feature using CDK construct pattern. Database construct in `lib/constructs/database/`, bootstrap Lambda following agent pattern in `lib/lambda/db-bootstrap/`. Unit tests in `test/unit/` mirroring source structure. Shared test utilities in `test/utils/` for MockPool and moto helpers.
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-| ----------- | ------------ | ------------------------------------- |
+|-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

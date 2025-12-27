@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Database Construct Stack Outputs",
+  "description": "Schema for stack outputs exported by the DatabaseConstruct",
+  "type": "object",
+  "properties": {
+    "DatabaseEndpoint": {
+      "type": "string",
+      "description": "Aurora PostgreSQL cluster endpoint hostname",
+      "pattern": "^[a-zA-Z0-9\\-]+\\.cluster-[a-zA-Z0-9\\-]+\\.rds\\.amazonaws\\.com$",
+      "examples": ["comprehend-dev.cluster-abc123.us-east-1.rds.amazonaws.com"]
+    },
+    "DatabasePort": {
+      "type": "integer",
+      "description": "Database port number",
+      "minimum": 1,
+      "maximum": 65535,
+      "default": 5432,
+      "examples": [5432]
+    },
+    "DatabaseSecretArn": {
+      "type": "string",
+      "description": "ARN of Secrets Manager secret containing master database credentials",
+      "pattern": "^arn:aws:secretsmanager:[a-z0-9\\-]+:[0-9]{12}:secret:[a-zA-Z0-9\\-]+-[a-zA-Z0-9]{6}$",
+      "examples": ["arn:aws:secretsmanager:us-east-1:123456789012:secret:comprehend-dev-db-credentials-AbCdEf"]
+    },
+    "DatabaseIamUser": {
+      "type": "string",
+      "description": "IAM database username for service authentication",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "minLength": 1,
+      "maxLength": 63,
+      "examples": ["db_service_user"]
+    },
+    "DatabaseClusterIdentifier": {
+      "type": "string",
+      "description": "Aurora cluster identifier",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9\\-]*$",
+      "minLength": 1,
+      "maxLength": 63,
+      "examples": ["comprehend-dev-database"]
+    }
+  },
+  "required": [
+    "DatabaseEndpoint",
+    "DatabasePort",
+    "DatabaseSecretArn",
+    "DatabaseIamUser",
+    "DatabaseClusterIdentifier"
+  ],
+  "additionalProperties": false
+}
+
