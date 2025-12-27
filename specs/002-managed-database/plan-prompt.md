@@ -26,8 +26,9 @@ Implement 0.2 Database Infrastructure from the [development plan](../../DEVELOPM
 - Unit tests should follow mocking strategies outlined in [CDK design docs](../../cdk/docs/design-docs.md)
   - AWS SDK clients are mocked externally with moto
     - Moto should be reset after each test
+    - Client providers should use custom client config pattern for overriding client endpoints
+    - Mock data should be shared between tests for consistency and returned from function calls to avoid side effects
   - Mock factories for I/O operations (e.g., connection pool)
-  - Handlers
 - Mocks that can be shared with other test suites should be written in `cdk/test/utils`
 
 ## Code Examples
