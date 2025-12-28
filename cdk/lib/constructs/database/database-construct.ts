@@ -124,6 +124,24 @@ export class DatabaseConstruct extends Construct {
       "Allow PostgreSQL access from within VPC",
     );
 
+    // Create security group for Lambda bootstrap function
+    const lambdaSecurityGroup = new ec2.SecurityGroup(
+      this,
+      "BootstrapLambdaSecurityGroup",
+      {
+        vpc,
+        description: "Security group for database bootstrap Lambda function",
+        allowAllOutbound: true, // Allow HTTPS to CloudFormation
+      },
+    );
+
+    // Allow Lambda to connect to database
+    this.securityGroup.addIngressRule(
+      lambdaSecurityGroup,
+      ec2.Port.tcp(5432),
+      "Allow database bootstrap Lambda to connect to database",
+    );
+
     // Create cluster-managed secret for master credentials
     const credentials = rds.Credentials.fromGeneratedSecret("postgres", {
       excludeCharacters: '"@/\\',
@@ -268,7 +286,7 @@ export class DatabaseConstruct extends Construct {
         vpcSubnets: {
           subnets: privateSubnets,
         },
-        securityGroups: [this.securityGroup],
+        securityGroups: [lambdaSecurityGroup],
         environment: {
           SECRET_ARN: this.secret.secretArn,
           CLUSTER_ENDPOINT: this.cluster.clusterEndpoint.hostname,
