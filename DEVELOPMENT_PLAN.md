@@ -877,7 +877,7 @@ CREATE INDEX idx_vocab_exercise ON vocab(vocab_exercise_id);
 -- Chat messages in order
 CREATE INDEX idx_chat_exercise_date ON chat_message(chat_message_exercise_id, created_at);
 
--- Full-text search (for CJK, consider pg_bigm or pgroonga extensions)
+-- Full-text search (using pg_bigm extension for CJK support - installed during bootstrap)
 CREATE INDEX idx_exercise_search ON exercise USING GIN(to_tsvector('simple', title || ' ' || content));
 ```
 
@@ -902,13 +902,16 @@ CREATE INDEX idx_exercise_search ON exercise USING GIN(to_tsvector('simple', tit
 
 ### CJK Language Support
 
-The full-text search implementation uses PostgreSQL's `to_tsvector` with the 'simple' configuration. For proper CJK (Chinese, Japanese, Korean) language support, consider:
+The full-text search implementation uses PostgreSQL's `to_tsvector` with the 'simple' configuration. For proper CJK (Chinese, Japanese, Korean) language support:
 
-1. **pg_bigm** - PostgreSQL extension for 2-gram text search
-2. **pgroonga** - PostgreSQL extension using Groonga for full-text search
-3. **Amazon OpenSearch** - External search service with CJK analyzers
+**Selected**: **pg_bigm** - PostgreSQL extension for 2-gram text search (available on AWS RDS)
 
-This should be evaluated during Phase 7.1 implementation.
+**Alternatives considered**:
+
+- **pgroonga** - PostgreSQL extension using Groonga for full-text search (not available on AWS RDS)
+- **Amazon OpenSearch** - External search service with CJK analyzers (adds complexity and cost)
+
+This has been implemented in Phase 0 (002-managed-database) with pg_bigm extension installed during database bootstrap.
 
 ### ReaderAgent Response Format
 

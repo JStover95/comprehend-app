@@ -163,7 +163,7 @@ N/A
 - All 6 tables created (user, exercise, token, vocab, join_vocab_token, chat_message)
 - All indexes created
 - All foreign key constraints created
-- pgroonga extension installed
+- pg_bigm extension installed
 - Bootstrap process is idempotent
 
 ### Phase 4 Tasks
@@ -181,7 +181,7 @@ N/A
 
 **Implementation:**
 
-- [X] T031 [US2] Create single schema SQL file in `cdk/lib/lambda/db-bootstrap/schema/schema.sql` containing all table definitions, indexes, constraints, and pgroonga extension
+- [X] T031 [US2] Create single schema SQL file in `cdk/lib/lambda/db-bootstrap/schema/schema.sql` containing all table definitions, indexes, constraints, and pg_bigm extension
 - [X] T032 [US2] Configure Lambda bundling to copy schema.sql file using afterBundling hook in `cdk/lib/constructs/database/database-construct.ts`
 - [X] T033 [US2] Create DbConnectionProvider class in `cdk/lib/lambda/db-bootstrap/db-connection-provider.ts` for connection pool management with master credentials
 - [X] T034 [US2] Create SchemaProvider class in `cdk/lib/lambda/db-bootstrap/schema-provider.ts` to execute schema.sql file from bundled schema directory

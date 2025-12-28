@@ -19,7 +19,7 @@ Deploy a secure, managed Aurora PostgreSQL database with automatic schema bootst
 **Project Type**: Infrastructure (CDK construct + Lambda custom resource)  
 **Performance Goals**: Database supports 100+ concurrent connections, Aurora Serverless V2 scales 0-2 ACUs (dev) to production capacity automatically  
 **Constraints**: Database must be in private subnet, no public access, IAM authentication required for services, bootstrap must be idempotent, environment-specific scaling (dev: 0-2 ACUs, prod: multi-AZ)  
-**Scale/Scope**: Single database construct, CloudFormation custom resource Lambda, schema initialization for 6 tables + indexes + constraints, IAM database user creation, pgroonga extension installation
+**Scale/Scope**: Single database construct, CloudFormation custom resource Lambda, schema initialization for 6 tables + indexes + constraints, IAM database user creation, pg_bigm extension installation
 
 ## Constitution Check
 

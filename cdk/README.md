@@ -428,7 +428,7 @@ aws service-quotas request-service-quota-increase \
 - **Schema Bootstrap**:
   - Custom resource Lambda executes on stack creation
   - Creates database schema (tables, indexes, constraints)
-  - Installs pgroonga extension for full-text search
+  - Installs pg_bigm extension for full-text search
   - Creates IAM database user for service authentication
   - Idempotent operations (safe to retry)
 

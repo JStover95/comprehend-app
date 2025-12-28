@@ -215,22 +215,22 @@ user
 
 ## PostgreSQL Extensions
 
-### pgroonga
+### pg_bigm
 
 **Purpose**: Full-text search for CJK (Chinese, Japanese, Korean) languages
 
-**Installation**: `CREATE EXTENSION IF NOT EXISTS pgroonga;`
+**Installation**: `CREATE EXTENSION IF NOT EXISTS pg_bigm;`
 
-**Usage**: Enables proper text search for non-Latin scripts in exercise content and vocabulary
+**Usage**: Enables proper text search for non-Latin scripts in exercise content and vocabulary using 2-gram indexing
 
-**Note**: Installed during bootstrap using master credentials (requires superuser)
+**Note**: Installed during bootstrap using master credentials (requires superuser). Chosen over pgroonga because pg_bigm is available on AWS RDS, while pgroonga is not.
 
 ## Bootstrap Sequence
 
 1. Create all tables (user, exercise, token, vocab, join_vocab_token, chat_message)
 2. Create all indexes
 3. Create all foreign key constraints
-4. Install pgroonga extension
+4. Install pg_bigm extension
 5. Create IAM database user for service authentication
 6. Test IAM connection
 

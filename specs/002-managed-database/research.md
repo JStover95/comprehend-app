@@ -23,7 +23,7 @@ This document consolidates technical decisions and research findings for impleme
 **Alternatives Considered**:
 
 - RDS PostgreSQL: Lacks serverless scaling, requires instance sizing decisions
-- Aurora MySQL: Not suitable for PostgreSQL-specific features (pgroonga extension)
+- Aurora MySQL: Not suitable for PostgreSQL-specific features (pg_bigm extension)
 - DynamoDB: NoSQL doesn't match relational schema requirements
 
 ### Deployment Model: Aurora Serverless V2
@@ -120,24 +120,25 @@ This document consolidates technical decisions and research findings for impleme
 - Embedded SQL strings in code: Less maintainable, harder to version control SQL separately
 - Terraform/RDS provider: Not using Terraform, CDK-native approach preferred
 
-### PostgreSQL Extensions: pgroonga
+### PostgreSQL Extensions: pg_bigm
 
-**Decision**: Install pgroonga extension during bootstrap for CJK full-text search
+**Decision**: Install pg_bigm extension during bootstrap for CJK full-text search
 
 **Rationale**:
 
 - Required for proper Chinese/Japanese/Korean text search (per development plan)
 - Must be installed as superuser (during bootstrap with master credentials)
 - One-time installation, persists across connections
+- **Available on AWS RDS**: pg_bigm is supported on AWS RDS PostgreSQL, while pgroonga is not available
 
 **Implementation**:
 
-- Execute `CREATE EXTENSION IF NOT EXISTS pgroonga;` during bootstrap
+- Execute `CREATE EXTENSION IF NOT EXISTS pg_bigm;` during bootstrap
 - Idempotent (IF NOT EXISTS prevents errors on re-run)
 
 **Alternatives Considered**:
 
-- pg_bigm: Alternative CJK search extension, pgroonga more feature-rich
+- pgroonga: More feature-rich but not available on AWS RDS
 - Native PostgreSQL full-text search: Inadequate for CJK languages
 
 ### Connection Pattern: Separation of Concerns
@@ -222,7 +223,7 @@ Following `cdk/docs/types-and-configuration.md`:
 1. Connect to database using master credentials from Secrets Manager
 2. Create IAM database user (if not exists)
 3. Execute schema SQL (tables, indexes, constraints)
-4. Install pgroonga extension
+4. Install pg_bigm extension
 5. Test IAM connection
 6. Return success
 
@@ -265,7 +266,7 @@ Following `cdk/docs/types-and-configuration.md`:
 3. ✅ **Authentication**: IAM primary, master credentials fallback
 4. ✅ **Bootstrap Mechanism**: CloudFormation custom resource Lambda
 5. ✅ **Schema Location**: Embedded in Lambda (or S3 if schema grows large)
-6. ✅ **Extension Installation**: pgroonga during bootstrap
+6. ✅ **Extension Installation**: pg_bigm during bootstrap
 7. ✅ **Testing Approach**: Unit tests with mocks (no integration tests)
 
 ## References
@@ -273,5 +274,5 @@ Following `cdk/docs/types-and-configuration.md`:
 - AWS Aurora Serverless V2: <https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html>
 - RDS IAM Database Authentication: <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html>
 - CloudFormation Custom Resources: <https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html>
-- pgroonga Extension: <https://pgroonga.github.io/>
+- pg_bigm Extension: <https://pgbigm.osdn.jp/pg_bigm_en.html>
 - CDK Design Docs: `cdk/docs/agent-pattern.md`, `cdk/docs/types-and-configuration.md`
