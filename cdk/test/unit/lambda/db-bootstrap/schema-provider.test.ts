@@ -4,6 +4,15 @@ import { SchemaError } from "../../../../lib/lambda/db-bootstrap/errors";
 import { MockPool, asMockPool } from "../../../utils/mock-pool";
 import * as fs from "fs";
 
+// Mock fs module to allow spying on readFileSync
+jest.mock("fs", () => {
+  const actualFs = jest.requireActual("fs");
+  return {
+    ...actualFs,
+    readFileSync: jest.fn(actualFs.readFileSync),
+  };
+});
+
 // ==========================================
 // Test Configuration Constants
 // ==========================================
@@ -34,6 +43,14 @@ describe("SchemaProvider", () => {
 
   beforeEach(() => {
     mockPool = new MockPool();
+    // Reset fs.readFileSync to use real implementation by default
+    (fs.readFileSync as jest.Mock).mockImplementation(
+      jest.requireActual("fs").readFileSync,
+    );
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe("executeSchema", () => {
@@ -139,9 +156,9 @@ describe("SchemaProvider", () => {
     it("should throw SchemaError if schema file cannot be read", async () => {
       // Arrange
       const provider = new SchemaProvider(baseConfig);
+
       // Mock fs.readFileSync to throw an error
-      const originalReadFileSync = fs.readFileSync;
-      jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+      (fs.readFileSync as jest.Mock).mockImplementation(() => {
         throw new Error("File not found");
       });
 
@@ -149,9 +166,6 @@ describe("SchemaProvider", () => {
       await expect(
         provider.executeSchema(asMockPool(mockPool)),
       ).rejects.toThrow(SchemaError);
-
-      // Restore
-      jest.spyOn(fs, "readFileSync").mockImplementation(originalReadFileSync);
     });
 
     it("should throw SchemaError if database query fails", async () => {
