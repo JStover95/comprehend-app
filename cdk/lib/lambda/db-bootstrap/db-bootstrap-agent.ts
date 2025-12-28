@@ -185,42 +185,66 @@ export class DbBootstrapAgent {
    */
   private async createIamUser(pool: Pool): Promise<void> {
     try {
-      // Use DO block with quote_ident() to safely escape username
-      // PostgreSQL doesn't support IF NOT EXISTS with CREATE USER
-      const createUserQuery = `
-        DO $$
-        DECLARE
-          username TEXT := $1;
-        BEGIN
-          IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = username) THEN
-            EXECUTE 'CREATE USER ' || quote_ident(username);
-          END IF;
-        END
-        $$;
-      `;
-      await pool.query(createUserQuery, [this.config.iamUser]);
+      // Check if user exists first
+      const userCheckResult = await pool.query(
+        "SELECT 1 FROM pg_catalog.pg_user WHERE usename = $1",
+        [this.config.iamUser],
+      );
+
+      // Create user if it doesn't exist
+      // PostgreSQL doesn't support IF NOT EXISTS with CREATE USER,
+      // so we check first and create only if needed
+      if (userCheckResult.rows.length === 0) {
+        // Use format() function for safe identifier escaping
+        // Since CREATE USER doesn't support parameters, we use format() with %I
+        // Cast parameters to TEXT so PostgreSQL can determine the type
+        const createUserSql = await pool.query<{ sql: string }>(
+          `SELECT format('CREATE USER %I', $1::TEXT) as sql`,
+          [this.config.iamUser],
+        );
+        await pool.query(createUserSql.rows[0]?.sql ?? "");
+      }
 
       // Grant IAM authentication role and database privileges
-      // Execute GRANT statements using EXECUTE with quote_ident() for safe escaping
-      const grantQuery = `
-        DO $$
-        DECLARE
-          username TEXT := $1;
-          dbname TEXT := $2;
-        BEGIN
-          EXECUTE 'GRANT rds_iam TO ' || quote_ident(username);
-          EXECUTE 'GRANT CONNECT ON DATABASE ' || quote_ident(dbname) || ' TO ' || quote_ident(username);
-          EXECUTE 'GRANT USAGE ON SCHEMA public TO ' || quote_ident(username);
-          EXECUTE 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ' || quote_ident(username);
-          EXECUTE 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ' || quote_ident(username);
-          EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ' || quote_ident(username);
-        END
-        $$;
-      `;
-      await pool.query(grantQuery, [
-        this.config.iamUser,
-        this.config.databaseName,
-      ]);
+      // Use format() with %I for identifier formatting (safe escaping)
+      // Cast parameters to TEXT so PostgreSQL can determine the type
+      const grantStatements: Array<{
+        query: string;
+        params: string[];
+      }> = [
+        {
+          query: `SELECT format('GRANT rds_iam TO %I', $1::TEXT) as sql`,
+          params: [this.config.iamUser],
+        },
+        {
+          query: `SELECT format('GRANT CONNECT ON DATABASE %I TO %I', $2::TEXT, $1::TEXT) as sql`,
+          params: [this.config.iamUser, this.config.databaseName],
+        },
+        {
+          query: `SELECT format('GRANT USAGE ON SCHEMA public TO %I', $1::TEXT) as sql`,
+          params: [this.config.iamUser],
+        },
+        {
+          query: `SELECT format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %I', $1::TEXT) as sql`,
+          params: [this.config.iamUser],
+        },
+        {
+          query: `SELECT format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO %I', $1::TEXT) as sql`,
+          params: [this.config.iamUser],
+        },
+        {
+          query: `SELECT format('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO %I', $1::TEXT) as sql`,
+          params: [this.config.iamUser],
+        },
+      ];
+
+      for (const grantStatement of grantStatements) {
+        const result = await pool.query<{ sql: string }>(
+          grantStatement.query,
+          grantStatement.params,
+        );
+        await pool.query(result.rows[0]?.sql ?? "");
+      }
 
       console.log(
         `IAM database user '${this.config.iamUser}' created or already exists with privileges granted`,
@@ -252,7 +276,7 @@ export class DbBootstrapAgent {
       const authToken = await this.credentialsProvider.createIamAuthToken();
 
       // Create IAM connection pool
-      iamPool = this.connectionProvider.createIamPool(authToken);
+      iamPool = await this.connectionProvider.createIamPool(authToken);
 
       // Test connection with a simple query
       await iamPool.query("SELECT 1");
