@@ -160,15 +160,15 @@ export class DbBootstrapAgent {
         await this.testIamConnection();
       }
     } catch (error) {
-      // Ensure pool is closed even if bootstrap fails
-      await pool.end();
       throw new BootstrapError(
         "Failed to bootstrap database schema",
         error as Error,
       );
     } finally {
-      // Always close the connection pool
-      await pool.end();
+      // Always close the connection pool if it was created
+      if (pool) {
+        await pool.end();
+      }
     }
   }
 
