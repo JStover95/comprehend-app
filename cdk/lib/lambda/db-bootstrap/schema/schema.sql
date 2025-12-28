@@ -2,8 +2,8 @@
 -- This schema is automatically bootstrapped when the database is first deployed
 -- All operations use IF NOT EXISTS to ensure idempotency
 
--- Install pgroonga extension for CJK full-text search
-CREATE EXTENSION IF NOT EXISTS pgroonga;
+-- Install pg_bigm extension for CJK full-text search
+CREATE EXTENSION IF NOT EXISTS pg_bigm;
 
 -- ==========================================
 -- Tables
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS chat_message (
 
 -- Exercise indexes
 CREATE INDEX IF NOT EXISTS idx_exercise_user_date ON exercise(exercise_user_id, created_at DESC);
--- Note: Full-text search index (idx_exercise_search) would be created separately if using pgroonga
+-- Note: Full-text search index (idx_exercise_search) would be created separately if using pg_bigm
 
 -- Token indexes
 CREATE INDEX IF NOT EXISTS idx_token_exercise_order ON token(token_exercise_id, "order");
