@@ -467,7 +467,7 @@ describe("DbBootstrapAgent", () => {
 
       // Create a connection provider that can create IAM pools
       class MockConnectionProviderWithIam extends MockDbConnectionProvider {
-        createIamPool(_authToken: string): Pool {
+        async createIamPool(_authToken: string): Promise<Pool> {
           return asMockPool(mockIamPool);
         }
       }
@@ -506,7 +506,7 @@ describe("DbBootstrapAgent", () => {
       mockCredentialsProvider.withToken("test-token");
 
       class MockConnectionProviderWithIam extends MockDbConnectionProvider {
-        createIamPool(_authToken: string): Pool {
+        async createIamPool(_authToken: string): Promise<Pool> {
           return asMockPool(mockIamPool);
         }
       }
@@ -541,7 +541,7 @@ describe("DbBootstrapAgent", () => {
       mockCredentialsProvider.withError(tokenError);
 
       class MockConnectionProviderWithIam extends MockDbConnectionProvider {
-        createIamPool(_authToken: string): Pool {
+        async createIamPool(_authToken: string): Promise<Pool> {
           throw tokenError;
         }
       }
@@ -570,7 +570,7 @@ describe("DbBootstrapAgent", () => {
       mockCredentialsProvider.withToken("test-token");
 
       class MockConnectionProviderWithIam extends MockDbConnectionProvider {
-        createIamPool(_authToken: string): Pool {
+        async createIamPool(_authToken: string): Promise<Pool> {
           return asMockPool(mockIamPool);
         }
       }

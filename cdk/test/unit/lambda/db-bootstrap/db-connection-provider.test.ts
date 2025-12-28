@@ -6,6 +6,12 @@ import {
   SecretsManagerClient,
   CreateSecretCommand,
 } from "@aws-sdk/client-secrets-manager";
+import * as rdsCaCert from "../../../../lib/lambda/db-bootstrap/rds-ca-cert";
+
+// Mock the RDS CA cert module
+jest.mock("../../../../lib/lambda/db-bootstrap/rds-ca-cert", () => ({
+  getRdsCaCert: jest.fn(),
+}));
 
 // ==========================================
 // Test Configuration Constants
@@ -49,7 +55,17 @@ const baseConfig: ServiceConfig = {
 // Tests
 // ==========================================
 
+// Mock CA certificate for SSL connections
+const mockCaCert =
+  "-----BEGIN CERTIFICATE-----\nMOCK_CA_CERT\n-----END CERTIFICATE-----";
+
 describe("DbConnectionProvider", () => {
+  beforeEach(() => {
+    // Reset the mock before each test
+    jest.clearAllMocks();
+    // Default mock implementation returns a mock CA cert
+    (rdsCaCert.getRdsCaCert as jest.Mock).mockResolvedValue(mockCaCert);
+  });
   let secretsManagerClient: SecretsManagerClient;
 
   beforeAll(() => {
@@ -246,7 +262,7 @@ describe("DbConnectionProvider", () => {
       const provider = new DbConnectionProvider(baseConfig);
 
       // Act
-      const pool = provider.createIamPool(authToken);
+      const pool = await provider.createIamPool(authToken);
 
       // Assert
       // Verify pool is created (it's a real Pool instance, we can't easily mock it)
@@ -264,7 +280,7 @@ describe("DbConnectionProvider", () => {
       const provider = new DbConnectionProvider(baseConfig);
 
       // Act
-      const pool = provider.createIamPool(authToken);
+      const pool = await provider.createIamPool(authToken);
 
       // Assert
       // The pool should be configured with IAM username and token as password
@@ -284,7 +300,7 @@ describe("DbConnectionProvider", () => {
       const provider = new DbConnectionProvider(config);
 
       // Act
-      const pool = provider.createIamPool(authToken);
+      const pool = await provider.createIamPool(authToken);
 
       // Assert
       expect(pool).toBeDefined();
@@ -304,7 +320,7 @@ describe("DbConnectionProvider", () => {
       const provider = new DbConnectionProvider(config);
 
       // Act
-      const pool = provider.createIamPool(authToken);
+      const pool = await provider.createIamPool(authToken);
 
       // Assert
       expect(pool).toBeDefined();
@@ -323,7 +339,7 @@ describe("DbConnectionProvider", () => {
       const provider = new DbConnectionProvider(config);
 
       // Act
-      const pool = provider.createIamPool(authToken);
+      const pool = await provider.createIamPool(authToken);
 
       // Assert
       expect(pool).toBeDefined();
@@ -338,7 +354,7 @@ describe("DbConnectionProvider", () => {
       const provider = new DbConnectionProvider(baseConfig);
 
       // Act
-      const pool = provider.createIamPool(authToken);
+      const pool = await provider.createIamPool(authToken);
 
       // Assert
       expect(pool).toBeDefined();
