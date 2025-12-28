@@ -308,7 +308,7 @@ export class DatabaseConstruct extends Construct {
         effect: iam.Effect.ALLOW,
         actions: ["rds-db:connect"],
         resources: [
-          `arn:aws:rds-db:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:dbuser:${this.cluster.clusterIdentifier}/${this.iamUser}`,
+          `arn:aws:rds-db:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:dbuser:${this.cluster.clusterResourceIdentifier}/${this.iamUser}`,
         ],
       }),
     );
