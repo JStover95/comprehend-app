@@ -6,7 +6,9 @@ AWS CDK infrastructure for the Comprehend mobile app backend, providing a secure
 
 - **Multi-Environment Support**: Pre-configured dev, staging, and prod environments
 - **VPC Networking**: Isolated network infrastructure with public/private subnets across multiple AZs
-- **Cost Optimized**: Dev environment without NAT gateways for cost savings
+- **Managed Database**: Aurora PostgreSQL Serverless V2 with automatic schema bootstrap
+- **IAM Database Authentication**: Secure service access using temporary IAM credentials
+- **Cost Optimized**: Dev environment without NAT gateways, Aurora Serverless V2 auto-scaling
 - **CloudFormation Exports**: Easy integration with dependent stacks
 - **Type-Safe Configuration**: TypeScript interfaces with validation
 - **Comprehensive Testing**: 76+ unit tests with 94% code coverage
@@ -89,14 +91,30 @@ cdk/
 │   ├── stacks/
 │   │   └── comprehend-stack.ts   # Main stack with environment config
 │   ├── constructs/
-│   │   └── networking/
-│   │       └── vpc-construct.ts  # VPC construct with subnets, NAT
+│   │   ├── networking/
+│   │   │   └── vpc-construct.ts  # VPC construct with subnets, NAT
+│   │   └── database/
+│   │       └── database-construct.ts  # Aurora PostgreSQL construct
+│   ├── lambda/
+│   │   └── db-bootstrap/         # Database bootstrap Lambda
+│   │       ├── handler.ts        # CloudFormation custom resource handler
+│   │       ├── db-bootstrap-agent.ts  # Bootstrap orchestration
+│   │       ├── db-connection-provider.ts  # Connection pool management
+│   │       ├── db-credentials-provider.ts  # IAM auth token generation
+│   │       ├── schema-provider.ts  # Schema SQL execution
+│   │       └── schema/
+│   │           └── schema.sql    # Database schema definitions
 │   ├── types/
 │   │   └── index.ts              # TypeScript interfaces & validation
 │   └── cdk-stack.ts              # (deprecated)
 ├── test/
 │   ├── stacks/
 │   ├── constructs/
+│   │   ├── networking/
+│   │   └── database/
+│   ├── unit/
+│   │   └── lambda/
+│   │       └── db-bootstrap/
 │   └── types/
 ├── package.json
 └── README.md
@@ -106,8 +124,10 @@ cdk/
 
 The stack exports the following CloudFormation outputs for use by dependent stacks:
 
+### Networking Outputs
+
 | Export Name | Description | Example Value |
- | ------------- | ------------- | --------------- |
+| ------------- | ------------- | --------------- |
 | `{env}-VpcId` | VPC identifier | `vpc-0123456789abcdef0` |
 | `{env}-VpcCidr` | VPC CIDR block | `10.0.0.0/16` |
 | `{env}-PublicSubnetIds` | Comma-separated public subnet IDs | `subnet-abc,subnet-def` |
@@ -115,6 +135,16 @@ The stack exports the following CloudFormation outputs for use by dependent stac
 | `{env}-AvailabilityZones` | Comma-separated AZs | `us-east-1a,us-east-1b` |
 | `{env}-NatGatewayIps` | NAT gateway EIPs (empty if disabled) | `52.1.2.3,52.1.2.4` |
 | `{env}-EnvironmentName` | Environment identifier | `dev` |
+
+### Database Outputs
+
+| Export Name | Description | Example Value |
+| ------------- | ------------- | --------------- |
+| `{env}-DatabaseEndpoint` | Aurora PostgreSQL cluster endpoint hostname | `comprehend-dev.cluster-abc123.us-east-1.rds.amazonaws.com` |
+| `{env}-DatabasePort` | Database port number | `5432` |
+| `{env}-DatabaseSecretArn` | ARN of Secrets Manager secret with master credentials | `arn:aws:secretsmanager:us-east-1:123456789012:secret:dev-database-credentials-AbCdEf` |
+| `{env}-DatabaseIamUser` | IAM database username for service authentication | `db_service_user` |
+| `{env}-DatabaseClusterIdentifier` | Aurora cluster identifier | `comprehend-dev-database` |
 
 ## Using Outputs in Dependent Stacks
 
@@ -141,6 +171,28 @@ export class MyServiceStack extends cdk.Stack {
 }
 ```
 
+### Import Database
+
+```typescript
+import * as cdk from 'aws-cdk-lib';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+
+export class MyServiceStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string) {
+    super(scope, id);
+
+    // Import database endpoint
+    const endpoint = cdk.Fn.importValue('dev-DatabaseEndpoint');
+    const port = cdk.Fn.importValue('dev-DatabasePort');
+    const secretArn = cdk.Fn.importValue('dev-DatabaseSecretArn');
+    const iamUser = cdk.Fn.importValue('dev-DatabaseIamUser');
+
+    // Use in service configuration...
+  }
+}
+```
+
 ### Query Outputs Programmatically
 
 ```typescript
@@ -162,6 +214,7 @@ async function getStackOutputs(environment: string) {
 // Usage
 const outputs = await getStackOutputs('dev');
 console.log('VPC ID:', outputs.VpcId);
+console.log('Database Endpoint:', outputs.DatabaseEndpoint);
 ```
 
 ## Configuration
@@ -359,17 +412,41 @@ aws service-quotas request-service-quota-increase \
   - No public IPs
   - Route to NAT Gateway (staging/prod) or isolated (dev)
 
+### Database Infrastructure
+
+- **Aurora PostgreSQL Serverless V2**: Auto-scaling managed database
+  - Engine: PostgreSQL 17.x
+  - Encryption: At rest and in transit
+  - Network: Private subnets only, no public access
+  - Authentication: IAM database authentication enabled
+  - Scaling:
+    - Dev/Staging: 0-2 ACUs (cost-optimized)
+    - Production: 2-16 ACUs (configurable), multi-AZ
+  - Backup: Environment-specific retention (dev: 1 day, prod: 7 days)
+  - Schema: Automatically bootstrapped via CloudFormation custom resource
+
+- **Schema Bootstrap**:
+  - Custom resource Lambda executes on stack creation
+  - Creates database schema (tables, indexes, constraints)
+  - Installs pgroonga extension for full-text search
+  - Creates IAM database user for service authentication
+  - Idempotent operations (safe to retry)
+
 ### High Availability
 
 - Resources deployed across multiple AZs (2-3 depending on environment)
 - NAT gateways in each AZ for redundancy (staging/prod)
 - Route tables configured for automatic failover
+- Production database uses multi-AZ deployment
 
 ### Security
 
 - Network isolation via VPC
 - Private subnets for backend services
 - Default security group rules restricted
+- Database access restricted to VPC only
+- Master credentials stored in Secrets Manager
+- IAM database authentication for service access
 - All resources tagged for tracking and cost allocation
 
 ## Additional Resources
