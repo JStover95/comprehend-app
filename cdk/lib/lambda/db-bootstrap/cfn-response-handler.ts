@@ -65,9 +65,11 @@ export async function sendResponse(
         if (res.statusCode === 200) {
           resolve();
         } else {
+          const statusCode = res.statusCode ?? "undefined";
+          const statusMessage = res.statusMessage ?? "no status message";
           reject(
             new Error(
-              `Failed to send CloudFormation response: ${res.statusCode}`,
+              `Failed to send CloudFormation response: HTTP ${statusCode} ${statusMessage}`,
             ),
           );
         }
@@ -76,8 +78,13 @@ export async function sendResponse(
     });
 
     req.on("error", (error: Error) => {
+      const errorMessage = error.message || String(error) || "unknown error";
+      const errorName = error.name || "Error";
+      const errorStack = error.stack ? `\nStack: ${error.stack}` : "";
       reject(
-        new Error(`Failed to send CloudFormation response: ${error.message}`),
+        new Error(
+          `Failed to send CloudFormation response (network error): ${errorName}: ${errorMessage}${errorStack}`,
+        ),
       );
     });
 
