@@ -298,6 +298,20 @@ export class DatabaseConstruct extends Construct {
     // Grant Lambda permissions to connect to database (VPC access)
     // The Lambda is already in the VPC with access to the security group
 
+    // Apply tags to Lambda function
+    cdk.Tags.of(bootstrapFunction).add(
+      "Application",
+      environmentConfig.tags.Application,
+    );
+    cdk.Tags.of(bootstrapFunction).add(
+      "Environment",
+      environmentConfig.tags.Environment,
+    );
+    cdk.Tags.of(bootstrapFunction).add(
+      "ManagedBy",
+      environmentConfig.tags.ManagedBy,
+    );
+
     // Create CloudFormation custom resource
     const bootstrapProvider = new customResources.Provider(
       this,
@@ -305,6 +319,20 @@ export class DatabaseConstruct extends Construct {
       {
         onEventHandler: bootstrapFunction,
       },
+    );
+
+    // Apply tags to custom resource provider
+    cdk.Tags.of(bootstrapProvider).add(
+      "Application",
+      environmentConfig.tags.Application,
+    );
+    cdk.Tags.of(bootstrapProvider).add(
+      "Environment",
+      environmentConfig.tags.Environment,
+    );
+    cdk.Tags.of(bootstrapProvider).add(
+      "ManagedBy",
+      environmentConfig.tags.ManagedBy,
     );
 
     new cdk.CustomResource(this, "BootstrapResource", {
@@ -343,6 +371,12 @@ export class DatabaseConstruct extends Construct {
       value: this.iamUser,
       description: "IAM database username for service authentication",
       exportName: `${environmentConfig.name}-DatabaseIamUser`,
+    });
+
+    new cdk.CfnOutput(this, "DatabaseClusterIdentifier", {
+      value: this.cluster.clusterIdentifier,
+      description: "Aurora PostgreSQL cluster identifier",
+      exportName: `${environmentConfig.name}-DatabaseClusterIdentifier`,
     });
   }
 }
