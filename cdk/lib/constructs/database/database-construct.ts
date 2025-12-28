@@ -353,17 +353,26 @@ export class DatabaseConstruct extends Construct {
       environmentConfig.tags.ManagedBy,
     );
 
-    new cdk.CustomResource(this, "BootstrapResource", {
-      serviceToken: bootstrapProvider.serviceToken,
-      properties: {
-        SecretArn: this.secret.secretArn,
-        ClusterEndpoint: this.cluster.clusterEndpoint.hostname,
-        ClusterPort: this.cluster.clusterEndpoint.port.toString(),
-        DatabaseName: "postgres",
-        IamUser: this.iamUser,
-        Environment: environmentConfig.name,
+    const bootstrapResource = new cdk.CustomResource(
+      this,
+      "BootstrapResource",
+      {
+        serviceToken: bootstrapProvider.serviceToken,
+        properties: {
+          SecretArn: this.secret.secretArn,
+          ClusterEndpoint: this.cluster.clusterEndpoint.hostname,
+          ClusterPort: this.cluster.clusterEndpoint.port.toString(),
+          DatabaseName: "postgres",
+          IamUser: this.iamUser,
+          Environment: environmentConfig.name,
+        },
       },
-    });
+    );
+
+    // Explicitly depend on the cluster and secret to ensure they're fully created
+    // before the bootstrap custom resource runs
+    bootstrapResource.node.addDependency(this.cluster);
+    bootstrapResource.node.addDependency(this.secret);
 
     // Export stack outputs
     new cdk.CfnOutput(this, "DatabaseEndpoint", {
