@@ -1,6 +1,13 @@
 import { DbCredentialsProvider } from "../../../../lib/lambda/db-bootstrap/db-credentials-provider";
 import { ServiceConfig } from "../../../../lib/lambda/db-bootstrap/types";
 
+// Mock @aws-sdk/rds-signer to avoid dynamic import issues in Jest
+jest.mock("@aws-sdk/rds-signer", () => ({
+  Signer: jest.fn().mockImplementation(() => ({
+    getAuthToken: jest.fn().mockResolvedValue("mock-iam-auth-token-12345"),
+  })),
+}));
+
 // ==========================================
 // Test Configuration Constants
 // ==========================================
@@ -29,17 +36,16 @@ const baseConfig: ServiceConfig = {
 describe("DbCredentialsProvider", () => {
   describe("createIamAuthToken", () => {
     it("should generate IAM auth token successfully", async () => {
-      // RDS Signer will call LocalStack/moto, which mocks the service externally
       const provider = new DbCredentialsProvider(baseConfig);
       const token = await provider.createIamAuthToken();
 
       expect(token).toBeDefined();
       expect(typeof token).toBe("string");
       expect(token.length).toBeGreaterThan(0);
+      expect(token).toBe("mock-iam-auth-token-12345");
     });
 
     it("should generate token with custom configuration", async () => {
-      // RDS Signer will call LocalStack/moto, which mocks the service externally
       const config: ServiceConfig = {
         ...baseConfig,
         clusterEndpoint: "custom-endpoint.example.com",
@@ -52,10 +58,10 @@ describe("DbCredentialsProvider", () => {
       expect(token).toBeDefined();
       expect(typeof token).toBe("string");
       expect(token.length).toBeGreaterThan(0);
+      expect(token).toBe("mock-iam-auth-token-12345");
     });
 
     it("should work with clientConfig for testing", async () => {
-      // RDS Signer will call LocalStack/moto, which mocks the service externally
       const testClientConfig = {
         endpoint: "http://localhost:5000",
         credentials: {
@@ -73,6 +79,7 @@ describe("DbCredentialsProvider", () => {
       expect(token).toBeDefined();
       expect(typeof token).toBe("string");
       expect(token.length).toBeGreaterThan(0);
+      expect(token).toBe("mock-iam-auth-token-12345");
     });
   });
 });
