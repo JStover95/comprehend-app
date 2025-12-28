@@ -5,6 +5,7 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { ServiceConfig } from "./types";
 import { ConnectionError } from "./errors";
+import { getRdsCaCert } from "./rds-ca-cert";
 
 /**
  * Type guard to validate database credentials structure
@@ -85,6 +86,9 @@ export class DbConnectionProvider {
 
       const credentials = parsed;
 
+      // Get RDS CA certificate for SSL verification
+      const caCert = await getRdsCaCert();
+
       // Create connection pool with master credentials
       const pool = new Pool({
         host: this.config.clusterEndpoint,
@@ -94,6 +98,7 @@ export class DbConnectionProvider {
         password: credentials.password,
         ssl: {
           rejectUnauthorized: true,
+          ca: caCert,
         },
         // Connection pool settings
         max: 5, // Maximum number of clients in the pool
@@ -121,8 +126,11 @@ export class DbConnectionProvider {
    * @returns Connection pool configured with IAM authentication
    * @throws ConnectionError if pool creation fails
    */
-  createIamPool(authToken: string): Pool {
+  async createIamPool(authToken: string): Promise<Pool> {
     try {
+      // Get RDS CA certificate for SSL verification
+      const caCert = await getRdsCaCert();
+
       // Create connection pool with IAM authentication
       const pool = new Pool({
         host: this.config.clusterEndpoint,
@@ -132,6 +140,7 @@ export class DbConnectionProvider {
         password: authToken, // IAM token used as password
         ssl: {
           rejectUnauthorized: true,
+          ca: caCert,
         },
         // Connection pool settings
         max: 5, // Maximum number of clients in the pool
