@@ -164,7 +164,7 @@ const connectionProvider = new DbConnectionProvider(config);
 const pool = connectionProvider.createIamPool(authToken);
 ```
 
-**Reference**: Pattern documented in `cdk/docs/design-docs.md` and used in existing `lambda/db-bootstrap/` reference
+**Reference**: Pattern documented in `cdk/design-docs/design-docs.md` and used in existing `lambda/db-bootstrap/` reference
 
 ### Testing Strategy: Unit Tests with Mocks
 

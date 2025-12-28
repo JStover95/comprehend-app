@@ -642,7 +642,7 @@ comprehend/
 │   └── config.ts                # App configuration
 ├── types/                        # TypeScript type definitions
 │   └── [types].ts
-└── docs/                         # Design documentation
+└── design-docs/                 # Design documentation
     ├── design-docs.md           # This file
     ├── accessibility.md         # ⚠️ CRITICAL - Start here
     ├── context-pattern.md

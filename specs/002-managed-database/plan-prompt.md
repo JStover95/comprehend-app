@@ -17,13 +17,13 @@ Implement 0.2 Database Infrastructure from the [development plan](../../DEVELOPM
 - Should initialize schema, IAM user, indices, and plugins (e.g., `pgroona`) on create
 - Should no-op on Update and Delete
 - Should test IAM connection
-- Should use good separation of concerns as defined in the [CDK design docs](../../cdk/docs/design-docs.md)
+- Should use good separation of concerns as defined in the [CDK design docs](../../cdk/design-docs/design-docs.md)
 
 ## Testing
 
 - Does not require integration tests
 - Unit tests should be written in `cdk/test/unit`
-- Unit tests should follow mocking strategies outlined in [CDK design docs](../../cdk/docs/design-docs.md)
+- Unit tests should follow mocking strategies outlined in [CDK design docs](../../cdk/design-docs/design-docs.md)
   - AWS SDK clients are mocked externally with moto
     - Moto should be reset after each test
     - Client providers should use custom client config pattern for overriding client endpoints

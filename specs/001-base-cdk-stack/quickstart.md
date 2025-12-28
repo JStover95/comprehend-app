@@ -366,7 +366,7 @@ Refer to `DEVELOPMENT_PLAN.md` for the complete roadmap.
 
 - [AWS CDK Developer Guide](https://docs.aws.amazon.com/cdk/v2/guide/home.html)
 - [AWS VPC User Guide](https://docs.aws.amazon.com/vpc/latest/userguide/)
-- [Project Design Docs](../../cdk/docs/design-docs.md)
+- [Project Design Docs](../../cdk/design-docs/design-docs.md)
 - [Environment Configuration Schema](./contracts/environment-config.schema.json)
 - [Stack Outputs Schema](./contracts/stack-outputs.schema.json)
 
