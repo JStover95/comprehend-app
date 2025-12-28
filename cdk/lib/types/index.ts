@@ -164,7 +164,7 @@ export const DEFAULT_ENVIRONMENT_CONFIGS: Record<
     name: "dev",
     vpcCidr: "10.0.0.0/16",
     maxAzs: 2,
-    enableNatGateways: false, // Cost optimization
+    enableNatGateways: true, // Required for Lambda functions in VPC to access CloudFormation
     tags: {
       Application: "Comprehend",
       Environment: "dev",

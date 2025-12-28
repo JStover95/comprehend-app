@@ -11,7 +11,7 @@ describe("VpcConstruct", () => {
     name: "dev",
     vpcCidr: "10.0.0.0/16",
     maxAzs: 2,
-    enableNatGateways: false,
+    enableNatGateways: true,
     tags: {
       Application: "Comprehend",
       Environment: "dev",
@@ -161,15 +161,28 @@ describe("VpcConstruct", () => {
     });
 
     it("does not create NAT gateways when disabled", () => {
-      // Arrange & Act
+      // Arrange - Create a config with NAT gateways disabled
+      const noNatConfig: EnvironmentConfig = {
+        name: "test",
+        vpcCidr: "10.0.0.0/16",
+        maxAzs: 2,
+        enableNatGateways: false,
+        tags: {
+          Application: "Comprehend",
+          Environment: "test",
+          ManagedBy: "CDK",
+        },
+      };
+
+      // Act
       new VpcConstruct(stack, "TestVpc", {
-        environmentConfig: devConfig,
+        environmentConfig: noNatConfig,
       });
 
       // Assert
       const template = Template.fromStack(stack);
 
-      // Should have 0 NAT gateways for dev
+      // Should have 0 NAT gateways when disabled
       template.resourceCountIs("AWS::EC2::NatGateway", 0);
     });
 
@@ -370,7 +383,7 @@ describe("VpcConstruct", () => {
 
       // Assert
       expect(construct.natGatewayIps).toBeDefined();
-      expect(construct.natGatewayIps.length).toBe(0);
+      expect(construct.natGatewayIps.length).toBe(2);
     });
 
     it("returns 'disabled' string for NAT gateway IPs when disabled", () => {
@@ -380,7 +393,9 @@ describe("VpcConstruct", () => {
       });
 
       // Assert
-      expect(construct.getNatGatewayIpsString()).toBe("disabled");
+      expect(construct.getNatGatewayIpsString()).toBe(
+        "NatGateway1,NatGateway2",
+      );
     });
   });
 });

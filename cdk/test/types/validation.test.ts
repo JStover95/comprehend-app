@@ -52,7 +52,7 @@ describe("validateEnvironmentConfig", () => {
     name: "dev",
     vpcCidr: "10.0.0.0/16",
     maxAzs: 2,
-    enableNatGateways: false,
+    enableNatGateways: true,
     tags: {
       Application: "Comprehend",
       Environment: "dev",

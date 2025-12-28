@@ -139,7 +139,7 @@ describe("cfn-response-handler", () => {
       mockResponse.statusCode = 500;
 
       await expect(sendResponse(baseEvent, context, "SUCCESS")).rejects.toThrow(
-        "Failed to send CloudFormation response: 500",
+        "Failed to send CloudFormation response: HTTP 500 no status message",
       );
     });
 

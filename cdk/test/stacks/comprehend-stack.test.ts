@@ -21,7 +21,7 @@ describe("ComprehendStack", () => {
       expect(stack.environmentConfig.name).toBe("dev");
       expect(stack.environmentConfig.vpcCidr).toBe("10.0.0.0/16");
       expect(stack.environmentConfig.maxAzs).toBe(2);
-      expect(stack.environmentConfig.enableNatGateways).toBe(false);
+      expect(stack.environmentConfig.enableNatGateways).toBe(true);
     });
 
     it("creates stack with staging environment configuration", () => {
@@ -115,7 +115,7 @@ describe("ComprehendStack", () => {
         name: "dev",
         vpcCidr: "10.0.0.0/16",
         maxAzs: 2,
-        enableNatGateways: false,
+        enableNatGateways: true,
         tags: {
           Application: "Comprehend",
           Environment: "dev",
@@ -142,7 +142,7 @@ describe("ComprehendStack", () => {
   });
 
   describe("NAT Gateway configuration", () => {
-    it("dev environment has no NAT gateways", () => {
+    it("dev environment has NAT gateways", () => {
       // Arrange & Act
       const stack = new ComprehendStack(app, "TestStack", {
         environmentName: "dev",
@@ -150,7 +150,8 @@ describe("ComprehendStack", () => {
       const template = Template.fromStack(stack);
 
       // Assert
-      template.resourceCountIs("AWS::EC2::NatGateway", 0);
+      // Dev has 2 NAT gateways (one per AZ)
+      template.resourceCountIs("AWS::EC2::NatGateway", 2);
     });
 
     it("prod environment has NAT gateways when enabled", () => {
@@ -320,7 +321,7 @@ describe("ComprehendStack", () => {
       const outputs = template.findOutputs("*");
       expect(outputs.NatGatewayIps).toBeDefined();
       expect(outputs.NatGatewayIps.Export?.Name).toBe("dev-NatGatewayIps");
-      expect(outputs.NatGatewayIps.Value).toBe("disabled");
+      expect(outputs.NatGatewayIps.Value).toBe("NatGateway1,NatGateway2");
     });
 
     it("exports environment name", () => {
@@ -407,7 +408,7 @@ describe("ComprehendStack", () => {
         name: "dev",
         vpcCidr: "10.10.0.0/16",
         maxAzs: 2, // Minimum allowed
-        enableNatGateways: false,
+        enableNatGateways: true,
         tags: {
           Application: "Comprehend",
           Environment: "dev",
