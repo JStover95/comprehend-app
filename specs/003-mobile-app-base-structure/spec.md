@@ -43,8 +43,6 @@ As a developer, I need a library of base components (buttons, inputs, text) that
 
 **Why this priority**: Base components are building blocks for all features. Without them, each feature would need to implement its own components, leading to inconsistency, accessibility issues, and slower development.
 
-@@ Rather than manually testing accessability, it should be enforced at build time
-
 **Independent Test**: Can be tested by creating a simple screen that uses all base components and verifying they meet accessibility standards (touch targets ≥44x44 points, proper labels, contrast ratios), respond to theme changes, and function correctly. Delivers reusable, accessible components ready for feature development.
 
 **Acceptance Scenarios**:
@@ -149,7 +147,7 @@ As a developer, I need to configure the app for different environments (developm
 - Users expect the app to respect system-level accessibility preferences (reduced motion, larger text)
 - The app will need to support both iOS and Android platforms
 - Environment configuration will be determined at build time, not runtime
-- The app will connect to backend APIs that have different endpoints for different environments
+- The app will connect to backend APIs that have different endpoints for different environments (development, staging, production)
 - Users may have varying levels of visual ability and may use assistive technologies
 - The app will need to support both portrait and landscape orientations
 - Base components will be extended with additional components as features are developed

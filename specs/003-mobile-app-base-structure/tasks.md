@@ -8,9 +8,9 @@
 
 This document breaks down the implementation plan into actionable, dependency-ordered tasks. Tasks are organized by user story to enable independent implementation and testing. Each task follows a strict checklist format with Task IDs, parallelization markers, and story labels.
 
-**Total Tasks**: 47  
+**Total Tasks**: 48  
 **User Stories**: 4 (P1, P2, P2, P3)  
-**MVP Scope**: User Story 1 (Theme System) - 13 tasks
+**MVP Scope**: User Story 1 (Theme System) - 14 tasks
 
 ## Dependencies
 
@@ -168,6 +168,7 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 - [ ] T042 Create integration test comprehend/**tests**/integration/theme-and-components.test.tsx verifying theme system works with all base components following comprehend/design-docs/testing/integration-testing.md
 - [ ] T043 Create accessibility test suite comprehend/**tests**/accessibility/contrast.test.ts verifying all theme colors meet WCAG 2.1 AA contrast requirements (4.5:1 normal text, 3:1 large text) following comprehend/design-docs/accessibility.md
+- [ ] T048 [US1] Create comprehend/**tests**/contexts/ThemeContext.system-change.test.tsx testing that app responds to system theme changes while running (SC-008) by mocking useColorScheme changes and verifying theme updates propagate correctly
 
 **Implementation**:
 
@@ -180,13 +181,13 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 - **Setup Phase**: 5 tasks
 - **Foundational Phase**: 2 tasks
-- **User Story 1 (Theme System)**: 8 tasks (1 mock, 2 tests, 5 implementation)
+- **User Story 1 (Theme System)**: 9 tasks (1 mock, 3 tests, 5 implementation)
 - **User Story 2 (Base Components)**: 9 tasks (0 mocks, 3 tests, 6 implementation)
 - **User Story 3 (Navigation)**: 9 tasks (0 mocks, 2 tests, 7 implementation)
 - **User Story 4 (Environment Config)**: 8 tasks (0 mocks, 1 test, 7 implementation)
 - **Polish Phase**: 6 tasks (0 mocks, 2 tests, 4 implementation)
 
-**Total**: 47 tasks
+**Total**: 48 tasks
 
 ## Parallel Execution Examples
 
