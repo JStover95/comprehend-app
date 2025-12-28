@@ -32,7 +32,7 @@ This constitution governs all contributions to the Comprehend reading comprehens
 ## Project Scope
 
 | Component | Location | Technology | Primary Concerns |
-|-----------|----------|------------|------------------|
+| ----------- | ---------- | ------------ | ------------------ |
 | Backend/Infrastructure | `cdk/` | AWS CDK, TypeScript, Lambda | Reliability, testability, observability |
 | Mobile Application | `comprehend/` | React Native, Expo, TypeScript | Accessibility, testability, user experience |
 
@@ -77,9 +77,16 @@ All user-facing components in `comprehend/` MUST meet WCAG 2.1 Level AA complian
 - Alternative text: Proper descriptions for images and icons
 - Motion: Respect reduced motion preferences
 
+**Enforcement:**
+
+- Runtime accessibility checking MUST be enabled in development mode (e.g., React Native AMA) to catch violations during development
+- All accessibility issues detected during development MUST be resolved before merge
+- Accessibility testing MUST be included in the test suite (unit, integration, and manual screen reader testing)
+- Pre-commit hooks or CI checks SHOULD verify accessibility compliance where feasible
+
 **Mandatory Reading:** `comprehend/docs/accessibility.md` before any UI work.
 
-**Rationale:** Accessibility is a legal requirement in many jurisdictions, expands user reach, and improves overall UX for all users. Retrofitting accessibility is significantly more expensive than building it in from the start.
+**Rationale:** Accessibility is a legal requirement in many jurisdictions, expands user reach, and improves overall UX for all users. Retrofitting accessibility is significantly more expensive than building it in from the start. Runtime checking during development ensures issues are caught early, before they reach production.
 
 ### III. Modular Architecture
 
@@ -162,7 +169,7 @@ All user-facing components in `comprehend/` MUST meet WCAG 2.1 Level AA complian
 A unit of work is complete when ALL of the following are satisfied:
 
 | Gate | Backend (`cdk/`) | Frontend (`comprehend/`) |
-|------|------------------|--------------------------|
+| ------ | ------------------ | -------------------------- |
 | Implementation | ✅ Feature complete | ✅ Feature complete |
 | Unit Tests | ✅ Tests pass (>80% coverage) | ✅ Tests pass (>80% coverage) |
 | Integration Tests | ✅ Where applicable | ✅ Where applicable |
