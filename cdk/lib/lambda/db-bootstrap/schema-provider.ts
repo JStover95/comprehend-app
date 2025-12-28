@@ -18,7 +18,7 @@ export class SchemaProvider {
    * Executes the schema SQL file against the database
    *
    * The schema.sql file is bundled with the Lambda function and contains:
-   * - pgroonga extension installation
+   * - pg_bigm extension installation
    * - All table definitions
    * - All indexes
    * - All foreign key constraints

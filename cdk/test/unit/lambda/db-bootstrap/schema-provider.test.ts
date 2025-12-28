@@ -117,7 +117,7 @@ describe("SchemaProvider", () => {
       );
     });
 
-    it("should install pgroonga extension", async () => {
+    it("should install pg_bigm extension", async () => {
       // Arrange
       const provider = new SchemaProvider(baseConfig);
       mockPool.withDefaultResponse({ rows: [], rowCount: 0 });
@@ -129,9 +129,7 @@ describe("SchemaProvider", () => {
       const queries = mockPool.getCapturedQueries();
       const sqlStatements = queries.map((q) => q.sql).join(" ");
 
-      expect(sqlStatements).toContain(
-        "CREATE EXTENSION IF NOT EXISTS pgroonga",
-      );
+      expect(sqlStatements).toContain("CREATE EXTENSION IF NOT EXISTS pg_bigm");
     });
 
     it("should create all required indexes", async () => {
