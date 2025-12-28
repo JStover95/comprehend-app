@@ -175,7 +175,58 @@ jest.mock('@react-native-ama/internal/dist/utils/logger.js', () => {
 });
 ```
 
-### 2. Create Component Tests
+### 2. Create Mock Provider for ThemeContext
+
+Create `comprehend/contexts/ThemeContext/__tests__/ThemeContext.mock.tsx`:
+
+```typescript
+import { ThemeContext, ThemeContextValue } from '../Context';
+
+/**
+ * Create mock value for ThemeContext
+ * Use this for testing components that consume ThemeContext
+ */
+export function createMockThemeValue(overrides: Partial<ThemeContextValue> = {}): ThemeContextValue {
+  return {
+    theme: 'system',
+    colors: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      background: '#FFFFFF',
+      surface: '#F2F2F7',
+      text: '#000000',
+      textSecondary: '#3C3C43',
+      textTertiary: '#8E8E93',
+      border: '#C7C7CC',
+      error: '#FF3B30',
+      success: '#34C759',
+      warning: '#FF9500',
+      info: '#5AC8FA',
+    },
+    isDark: false,
+    setTheme: jest.fn(),
+    ...overrides,
+  };
+}
+
+/**
+ * Mock provider for ThemeContext
+ * Use this to wrap components in tests
+ */
+export function MockThemeProvider({
+  value,
+  children,
+}: {
+  value: ThemeContextValue;
+  children: React.ReactNode;
+}) {
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+```
+
+Follow patterns from `comprehend/design-docs/testing/unit-testing.md` (Mock Provider Pattern section).
+
+### 3. Create Component Tests
 
 Create test files for each component:
 
@@ -185,7 +236,7 @@ Create test files for each component:
 
 Follow patterns from `comprehend/design-docs/testing/unit-testing.md`.
 
-### 3. Create Theme Context Tests
+### 4. Create Theme Context Tests
 
 Create test file:
 
@@ -198,7 +249,7 @@ Test:
 - AsyncStorage persistence
 - Theme switching
 
-### 4. Accessibility Testing
+### 5. Accessibility Testing
 
 **Development Testing with AMA**:
 
@@ -229,12 +280,18 @@ Use React Native Testing Library's accessibility queries.
 - [ ] Test theme switching
 - [ ] Verify contrast ratios meet WCAG AA
 
+### Test IDs
+
+- [ ] Create `components/components.ids.ts` with test ID constants
+- [ ] Define test IDs for Button, Input, and Text components
+- [ ] Use test IDs in all base components
+
 ### Base Components
 
-- [ ] Create Button component with accessibility props
-- [ ] Create Input component with labels and error states
-- [ ] Create Text component with typography scales
-- [ ] Add unit tests for all components
+- [ ] Create Button component with accessibility props and test IDs
+- [ ] Create Input component with labels, error states, and test IDs
+- [ ] Create Text component with typography scales and test IDs
+- [ ] Add unit tests for all components using test IDs
 - [ ] Test accessibility with VoiceOver/TalkBack
 - [ ] Verify touch target sizes
 
@@ -262,10 +319,11 @@ Use React Native Testing Library's accessibility queries.
 
 ### Testing
 
-- [ ] Write unit tests for all components (>80% coverage)
-- [ ] Write tests for theme context
+- [ ] Create mock provider for ThemeContext (`ThemeContext.mock.tsx`)
+- [ ] Write unit tests for all components using test IDs (>80% coverage)
+- [ ] Write tests for theme context using mock provider
 - [ ] Test accessibility requirements
-- [ ] Run ESLint with accessibility rules
+- [ ] Verify test isolation (mocks cleared between tests)
 
 ## Verification
 

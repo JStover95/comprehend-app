@@ -173,7 +173,9 @@ This feature establishes the foundational structure for the mobile application. 
 
 **Validation Rules**:
 
+- testID is required for all UI components (for testing with React Native Testing Library)
 - testID should be unique within a screen
+- Test IDs should be defined in `components/components.ids.ts` following the test ID pattern
 - accessibilityLabel is required for interactive components
 - accessibilityRole should match component's semantic purpose
 

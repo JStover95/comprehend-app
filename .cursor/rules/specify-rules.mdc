@@ -5,6 +5,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-23
 ## Active Technologies
 - TypeScript 5.x (strict mode) + AWS CDK v2, aws-cdk-lib (RDS, Lambda, Secrets Manager, IAM), pg (PostgreSQL client), @aws-sdk/rds-signer (IAM auth tokens) (002-managed-database)
 - Amazon Aurora PostgreSQL 17.x (Serverless V2), Secrets Manager (master credentials) (002-managed-database)
+- TypeScript 5.9.2 with strict mode enabled (003-mobile-app-base-structure)
 
 - TypeScript (per existing `cdk/tsconfig.json`), Node.js runtime for CDK synthesis (001-base-cdk-stack)
 
@@ -24,6 +25,7 @@ npm test && npm run lint
 TypeScript (per existing `cdk/tsconfig.json`), Node.js runtime for CDK synthesis: Follow standard conventions
 
 ## Recent Changes
+- 003-mobile-app-base-structure: Added TypeScript 5.9.2 with strict mode enabled
 - 002-managed-database: Added TypeScript 5.x (strict mode) + AWS CDK v2, aws-cdk-lib (RDS, Lambda, Secrets Manager, IAM), pg (PostgreSQL client), @aws-sdk/rds-signer (IAM auth tokens)
 
 - 001-base-cdk-stack: Added TypeScript (per existing `cdk/tsconfig.json`), Node.js runtime for CDK synthesis
