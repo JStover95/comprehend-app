@@ -62,3 +62,6 @@ x.py
 coverage/
 
 **/*.map
+
+**/ios
+**/android
