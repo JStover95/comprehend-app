@@ -93,20 +93,20 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Mocks**:
 
-- [ ] T008 [P] [US1] Create comprehend/contexts/ThemeContext/**tests**/ThemeContext.mock.tsx with createMockThemeValue() and MockThemeProvider following comprehend/design-docs/testing/unit-testing.md Mock Provider Pattern
+- [X] T008 [P] [US1] Create comprehend/contexts/ThemeContext/**tests**/ThemeContext.mock.tsx with createMockThemeValue() and MockThemeProvider following comprehend/design-docs/testing/unit-testing.md Mock Provider Pattern
 
 **Tests**:
 
-- [ ] T009 [P] [US1] Create comprehend/**tests**/contexts/ThemeContext.test.tsx testing theme state management, system preference detection, AsyncStorage persistence, and theme switching following comprehend/design-docs/testing/unit-testing.md
-- [ ] T010 [P] [US1] Create comprehend/**tests**/hooks/use-theme.test.tsx testing useTheme hook with MockThemeProvider following comprehend/design-docs/testing/unit-testing.md Hook Testing
+- [X] T009 [P] [US1] Create comprehend/**tests**/contexts/ThemeContext.test.tsx testing theme state management, system preference detection, AsyncStorage persistence, and theme switching following comprehend/design-docs/testing/unit-testing.md
+- [X] T010 [P] [US1] Create comprehend/**tests**/hooks/use-theme.test.tsx testing useTheme hook with MockThemeProvider following comprehend/design-docs/testing/unit-testing.md Hook Testing
 
 **Implementation**:
 
-- [ ] T011 [US1] Create comprehend/contexts/ThemeContext/Context.tsx defining ThemeContextValue interface with state (mode, colors, isDark, typography, spacing, borderRadius) and actions (setTheme) following comprehend/design-docs/context-pattern.md
-- [ ] T012 [US1] Create comprehend/contexts/ThemeContext/Provider.tsx implementing ThemeProvider with AsyncStorage persistence, system color scheme detection via useColorScheme, and theme state management following comprehend/design-docs/context-pattern.md and comprehend/design-docs/styling-pattern.md
-- [ ] T013 [US1] Create comprehend/contexts/ThemeContext/use-theme.ts custom hook with error handling for use outside provider following comprehend/design-docs/context-pattern.md Custom Hooks
-- [ ] T014 [US1] Update comprehend/app/_layout.tsx to wrap app with ThemeProvider and implement ThemedStatusBar component following comprehend/design-docs/navigation-pattern.md and comprehend/design-docs/styling-pattern.md
-- [ ] T015 [US1] Update comprehend/app/index.tsx to demonstrate theme switching with buttons for light/dark/system modes and verify theme colors are applied correctly
+- [X] T011 [US1] Create comprehend/contexts/ThemeContext/Context.tsx defining ThemeContextValue interface with state (mode, colors, isDark, typography, spacing, borderRadius) and actions (setTheme) following comprehend/design-docs/context-pattern.md
+- [X] T012 [US1] Create comprehend/contexts/ThemeContext/Provider.tsx implementing ThemeProvider with AsyncStorage persistence, system color scheme detection via useColorScheme, and theme state management following comprehend/design-docs/context-pattern.md and comprehend/design-docs/styling-pattern.md
+- [X] T013 [US1] Create comprehend/contexts/ThemeContext/use-theme.ts custom hook with error handling for use outside provider following comprehend/design-docs/context-pattern.md Custom Hooks
+- [X] T014 [US1] Update comprehend/app/_layout.tsx to wrap app with ThemeProvider and implement ThemedStatusBar component following comprehend/design-docs/navigation-pattern.md and comprehend/design-docs/styling-pattern.md
+- [X] T015 [US1] Update comprehend/app/index.tsx to demonstrate theme switching with buttons for light/dark/system modes and verify theme colors are applied correctly
 
 ## Phase 4: User Story 2 - Reusable Interactive Components (P2)
 
