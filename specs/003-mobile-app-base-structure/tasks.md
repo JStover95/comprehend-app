@@ -125,18 +125,18 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Tests**:
 
-- [ ] T016 [US2] Define test IDs in comprehend/components/components.ids.ts for Button, Input, and Text components (BUTTON_IDS, INPUT_IDS, TEXT_IDS) following comprehend/design-docs/testing/unit-testing.md Test ID Pattern
-- [ ] T017 [P] [US2] Create comprehend/**tests**/components/ui/Button.test.tsx testing accessibility props, touch target size, theme colors, disabled state, and onPress handler following comprehend/design-docs/testing/unit-testing.md and comprehend/design-docs/accessibility.md
-- [ ] T018 [P] [US2] Create comprehend/**tests**/components/ui/Input.test.tsx testing labels, error states, accessibility props, theme colors, and value changes following comprehend/design-docs/testing/unit-testing.md and comprehend/design-docs/accessibility.md
-- [ ] T019 [P] [US2] Create comprehend/**tests**/components/ui/Text.test.tsx testing typography scales, theme colors, contrast ratios, and accessibility props following comprehend/design-docs/testing/unit-testing.md and comprehend/design-docs/accessibility.md
+- [X] T016 [US2] Define test IDs in comprehend/components/components.ids.ts for Button, Input, and Text components (BUTTON_IDS, INPUT_IDS, TEXT_IDS) following comprehend/design-docs/testing/unit-testing.md Test ID Pattern
+- [X] T017 [P] [US2] Create comprehend/**tests**/components/ui/Button.test.tsx testing accessibility props, touch target size, theme colors, disabled state, and onPress handler following comprehend/design-docs/testing/unit-testing.md and comprehend/design-docs/accessibility.md
+- [X] T018 [P] [US2] Create comprehend/**tests**/components/ui/Input.test.tsx testing labels, error states, accessibility props, theme colors, and value changes following comprehend/design-docs/testing/unit-testing.md and comprehend/design-docs/accessibility.md
+- [X] T019 [P] [US2] Create comprehend/**tests**/components/ui/Text.test.tsx testing typography scales, theme colors, contrast ratios, and accessibility props following comprehend/design-docs/testing/unit-testing.md and comprehend/design-docs/accessibility.md
 
 **Implementation**:
 
-- [ ] T020 [US2] Create comprehend/components/ui/Button.tsx with minimum 44x44 touch target, accessibility props (accessibilityRole, accessibilityLabel), theme-aware styling, and test IDs following comprehend/design-docs/component-architecture.md and comprehend/design-docs/accessibility.md
-- [ ] T021 [US2] Create comprehend/components/ui/Input.tsx with proper labels, error states (text indicators in addition to color), accessibility props, theme-aware styling, and test IDs following comprehend/design-docs/component-architecture.md and comprehend/design-docs/accessibility.md
-- [ ] T022 [US2] Create comprehend/components/ui/Text.tsx with typography scales (headings, body, captions), theme-aware colors, Dynamic Type support (iOS), and test IDs following comprehend/design-docs/component-architecture.md and comprehend/design-docs/accessibility.md
-- [ ] T023 [US2] Create comprehend/components/ui/index.ts exporting all base components (Button, Input, Text)
-- [ ] T024 [US2] Update comprehend/app/index.tsx to showcase all base components (Button variants, Input with error states, Text typography scales) and verify theme integration
+- [X] T020 [US2] Create comprehend/components/ui/Button.tsx with minimum 44x44 touch target, accessibility props (accessibilityRole, accessibilityLabel), theme-aware styling, and test IDs following comprehend/design-docs/component-architecture.md and comprehend/design-docs/accessibility.md
+- [X] T021 [US2] Create comprehend/components/ui/Input.tsx with proper labels, error states (text indicators in addition to color), accessibility props, theme-aware styling, and test IDs following comprehend/design-docs/component-architecture.md and comprehend/design-docs/accessibility.md
+- [X] T022 [US2] Create comprehend/components/ui/Text.tsx with typography scales (headings, body, captions), theme-aware colors, Dynamic Type support (iOS), and test IDs following comprehend/design-docs/component-architecture.md and comprehend/design-docs/accessibility.md
+- [X] T023 [US2] Create comprehend/components/ui/index.ts exporting all base components (Button, Input, Text)
+- [X] T024 [US2] Update comprehend/app/index.tsx to showcase all base components (Button variants, Input with error states, Text typography scales) and verify theme integration
 
 ## Phase 5: User Story 3 - Navigate Between App Sections (P2)
 
