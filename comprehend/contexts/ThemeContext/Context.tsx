@@ -7,7 +7,12 @@
 
 import { createContext } from "react";
 import type { ThemeMode } from "@/types";
-import type { Colors, Typography, Spacing, BorderRadius } from "@/constants/theme";
+import type {
+  Colors,
+  Typography,
+  Spacing,
+  BorderRadius,
+} from "@/constants/theme";
 
 /**
  * Theme colors interface
@@ -58,6 +63,5 @@ export interface ThemeContextValue {
  * Following patterns from comprehend/design-docs/context-pattern.md
  */
 export const ThemeContext = createContext<ThemeContextValue | undefined>(
-  undefined
+  undefined,
 );
-
