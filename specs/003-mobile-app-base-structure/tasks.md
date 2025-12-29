@@ -42,6 +42,11 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Goal**: Initialize project structure and install dependencies
 
+**Design Document References**:
+
+- `comprehend/design-docs/testing/setup.md` - Jest and React Native Testing Library configuration
+- `comprehend/design-docs/testing/unit-testing.md` - Jest mocks, test ID patterns
+
 **Mocks**: N/A
 
 **Tests**: N/A
@@ -58,6 +63,11 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Goal**: Establish shared types and constants needed across all user stories
 
+**Design Document References**:
+
+- `comprehend/design-docs/types-and-configuration.md` - TypeScript patterns, type definitions
+- `comprehend/design-docs/styling-pattern.md` - Theme constants, color and typography definitions
+
 **Mocks**: N/A
 
 **Tests**: N/A
@@ -70,6 +80,14 @@ This document breaks down the implementation plan into actionable, dependency-or
 ## Phase 3: User Story 1 - Consistent Visual Experience (P1)
 
 **Goal**: Implement theme system with light/dark modes, system preference detection, and WCAG 2.1 AA compliance
+
+**Design Document References**:
+
+- `comprehend/design-docs/context-pattern.md` - Context API pattern, Provider implementation, custom hooks
+- `comprehend/design-docs/styling-pattern.md` - Theme system, StyleSheet patterns, dark mode support
+- `comprehend/design-docs/navigation-pattern.md` - Root layout configuration, ThemedStatusBar
+- `comprehend/design-docs/testing/unit-testing.md` - Mock provider pattern, hook testing, test ID patterns
+- `comprehend/design-docs/accessibility.md` - WCAG 2.1 AA compliance, contrast ratios, color accessibility
 
 **Independent Test Criteria**: All screens use theme colors, text meets contrast requirements (4.5:1 for normal text, 3:1 for large text), app responds to system dark mode preferences, and theme preference persists across app restarts.
 
@@ -94,6 +112,13 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Goal**: Create accessible base components (Button, Input, Text) that are themed, reusable, and meet WCAG 2.1 AA standards
 
+**Design Document References**:
+
+- `comprehend/design-docs/component-architecture.md` - Component organization, props patterns, test IDs
+- `comprehend/design-docs/accessibility.md` - WCAG 2.1 AA requirements, touch targets, screen reader support, contrast ratios
+- `comprehend/design-docs/styling-pattern.md` - Theme-aware styling, StyleSheet patterns
+- `comprehend/design-docs/testing/unit-testing.md` - Component testing patterns, test ID usage
+
 **Independent Test Criteria**: All base components meet accessibility standards (touch targets ≥44x44 points, proper labels, contrast ratios), respond to theme changes, and function correctly with screen readers.
 
 **Mocks**: N/A
@@ -116,6 +141,12 @@ This document breaks down the implementation plan into actionable, dependency-or
 ## Phase 5: User Story 3 - Navigate Between App Sections (P2)
 
 **Goal**: Set up file-based navigation structure using Expo Router with support for tabs, stacks, and deep linking
+
+**Design Document References**:
+
+- `comprehend/design-docs/navigation-pattern.md` - Expo Router file-based routing, Stack and Tab navigators, deep linking configuration
+- `comprehend/design-docs/testing/integration-testing.md` - Navigation testing patterns, screen navigation tests
+- `comprehend/design-docs/accessibility.md` - Navigation accessibility, screen reader support for navigation elements
 
 **Independent Test Criteria**: Users can navigate between screens, navigation state persists correctly, deep links work as expected, and navigation elements are accessible with screen readers.
 
@@ -140,6 +171,10 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Goal**: Implement environment configuration system that loads settings at build time for different environments (development, staging, production)
 
+**Design Document References**:
+
+- `comprehend/design-docs/types-and-configuration.md` - Environment configuration management, type-safe configuration, validation patterns
+
 **Independent Test Criteria**: App loads correct API endpoints, feature flags, and environment-specific values for each environment. Configuration is validated on app startup.
 
 **Mocks**: N/A
@@ -161,6 +196,12 @@ This document breaks down the implementation plan into actionable, dependency-or
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Goal**: Finalize implementation, ensure accessibility compliance, and verify all requirements are met
+
+**Design Document References**:
+
+- `comprehend/design-docs/accessibility.md` - WCAG 2.1 AA compliance verification, contrast ratio testing, touch target validation
+- `comprehend/design-docs/testing/integration-testing.md` - Integration test patterns for theme and component interactions
+- `comprehend/design-docs/testing/unit-testing.md` - Test ID pattern verification
 
 **Mocks**: N/A
 
