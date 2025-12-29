@@ -109,6 +109,82 @@ export function Button({ variant, size, disabled }: ButtonProps) {
 }
 ```
 
+### Style Memoization
+
+When styles depend on props or theme values, memoize style arrays to prevent unnecessary recalculations:
+
+```typescript
+import { useMemo } from 'react';
+import { useTheme } from '@/contexts/ThemeContext/use-theme';
+
+export function Button({ 
+  variant, 
+  size, 
+  disabled, 
+  loading, 
+  style 
+}: ButtonProps) {
+  const { colors, borderRadius } = useTheme();
+
+  // Memoize computed style values
+  const backgroundColor = useMemo(() => {
+    if (disabled || loading) return colors.border;
+    switch (variant) {
+      case "primary":
+        return colors.primary;
+      case "secondary":
+        return colors.secondary;
+      default:
+        return "transparent";
+    }
+  }, [variant, disabled, loading, colors.border, colors.primary, colors.secondary]);
+
+  // Memoize style array
+  const buttonStyles = useMemo(
+    () => [
+      styles.button,
+      styles[`button_${size}`],
+      {
+        backgroundColor,
+        borderRadius: borderRadius.md,
+        opacity: disabled && !loading ? 0.5 : 1,
+      },
+      style, // Allow style prop override
+    ],
+    [
+      size,
+      backgroundColor,
+      borderRadius.md,
+      disabled,
+      loading,
+      style,
+    ],
+  );
+
+  return (
+    <TouchableOpacity style={buttonStyles}>
+      <Text>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+```
+
+**Why memoize styles:**
+
+- Style arrays are recreated on every render without memoization
+- Prevents unnecessary style recalculations in React Native
+- Critical for components used in lists or frequently re-rendering contexts
+- Reduces memory allocations and improves performance
+
+**Best practices:**
+
+- Always memoize style arrays that depend on props or theme
+- Include all dependencies in the dependency array
+- Combine static `StyleSheet` styles with dynamic inline styles
+- Allow `style` prop override as the last element in the array
+
+**For more details on optimization patterns**, see [Component Architecture - Performance Optimization](./component-architecture.md#performance-optimization).
+
 ### Shared Styles
 
 Extract common styles into a separate file:

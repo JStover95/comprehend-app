@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the patterns and conventions for structuring React Native components in this Expo application. It covers component types, organization, props patterns, and composition strategies.
+This document outlines the patterns and conventions for structuring React Native components in this Expo application. It covers component types, organization, props patterns, composition strategies, and performance optimization patterns including React.memo, useMemo, useCallback, and style memoization.
 
 ## Table of Contents
 
@@ -801,20 +801,215 @@ export const DataItem = React.memo(function DataItem({
     </TouchableOpacity>
   );
 });
+```
 
-// With custom comparison
+**When to use React.memo:**
+
+- Component receives props that don't change frequently
+- Component is expensive to render
+- Component is used in lists or frequently re-rendering parents
+- Component is a reusable UI component (like those in `components/ui/`)
+
+**When NOT to use React.memo:**
+
+- Component props change on every render
+- Component is simple and cheap to render
+- Memoization overhead exceeds render cost
+
+### React.memo with Custom Comparison
+
+Use custom comparison functions when default shallow equality isn't sufficient:
+
+```typescript
 export const UserCard = React.memo(
   function UserCard({ user }: UserCardProps) {
     return <View>{/* ... */}</View>;
   },
   (prevProps, nextProps) => {
+    // Only re-render if user ID or name changes
+    // Ignore other user properties
     return prevProps.user.id === nextProps.user.id &&
            prevProps.user.name === nextProps.user.name;
   }
 );
 ```
 
-### useCallback and useMemo
+**When to use custom comparison:**
+
+- Component receives complex objects where only specific fields matter
+- You want to ignore certain prop changes
+- Performance profiling shows unnecessary re-renders
+
+**Best practice:** Default shallow comparison is usually sufficient. Only add custom comparison if profiling shows it's needed.
+
+### useMemo for Computed Values
+
+Memoize expensive computations or values derived from props:
+
+```typescript
+function ButtonComponent({ variant, disabled, colors }: ButtonProps) {
+  // Memoize computed color values
+  const backgroundColor = useMemo(() => {
+    if (disabled) return colors.border;
+    switch (variant) {
+      case "primary":
+        return colors.primary;
+      case "secondary":
+        return colors.secondary;
+      case "outline":
+      case "ghost":
+        return "transparent";
+    }
+  }, [variant, disabled, colors.border, colors.primary, colors.secondary]);
+
+  const textColor = useMemo(() => {
+    if (disabled) return colors.textSecondary;
+    switch (variant) {
+      case "primary":
+      case "secondary":
+        return "#FFFFFF";
+      default:
+        return colors.primary;
+    }
+  }, [variant, disabled, colors.textSecondary, colors.primary]);
+
+  // ... rest of component
+}
+```
+
+**When to use useMemo:**
+
+- Computation involves multiple conditionals or calculations
+- Value depends on multiple props that may not all change together
+- Computation result is used in dependency arrays of other hooks
+- Value is passed to memoized child components
+
+**When NOT to use useMemo:**
+
+- Simple value assignment (e.g., `const x = props.value`)
+- Computation is trivial (e.g., `const doubled = value * 2`)
+- Value changes on every render anyway
+
+### useMemo for Style Objects
+
+Memoize style arrays that combine static styles with dynamic values:
+
+```typescript
+function ButtonComponent({ 
+  size, 
+  backgroundColor, 
+  borderColor, 
+  borderRadius, 
+  disabled, 
+  loading, 
+  style 
+}: ButtonProps) {
+  const buttonStyles = useMemo(
+    () => [
+      styles.button,
+      styles[`button_${size}`],
+      {
+        backgroundColor,
+        borderColor,
+        borderRadius: borderRadius.md,
+        opacity: disabled && !loading ? 0.5 : 1,
+      },
+      style, // Allow style prop override
+    ],
+    [
+      size,
+      backgroundColor,
+      borderColor,
+      borderRadius.md,
+      disabled,
+      loading,
+      style,
+    ],
+  );
+
+  const textStyles = useMemo(
+    () => [
+      styles.text,
+      styles[`text_${size}`],
+      { color: textColor },
+    ],
+    [size, textColor],
+  );
+
+  return (
+    <TouchableOpacity style={buttonStyles}>
+      <Text style={textStyles}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+```
+
+**Why this matters:**
+
+- Style arrays are recreated on every render without memoization
+- Memoized styles prevent unnecessary style recalculations
+- Critical for components in lists or frequently re-rendering contexts
+
+**Best practices:**
+
+- Always memoize style arrays that depend on props or theme
+- Include all dependencies in the dependency array
+- Combine static `StyleSheet` styles with dynamic inline styles
+- Allow `style` prop override as the last element in the array
+
+### useCallback for Event Handlers
+
+Memoize callbacks passed to memoized child components:
+
+```typescript
+// Parent component
+function ParentComponent() {
+  const [count, setCount] = useState(0);
+  const router = useRouter();
+
+  // Memoize handler passed to memoized Button component
+  const handlePress = useCallback(() => {
+    router.push(`/detail/${count}`);
+  }, [router, count]);
+
+  // Memoize handler for list items
+  const handleItemPress = useCallback((id: string) => {
+    router.push(`/detail/${id}`);
+  }, [router]);
+
+  return (
+    <View>
+      <Button onPress={handlePress} title="Navigate" />
+      <FlatList
+        data={items}
+        renderItem={({ item }) => (
+          <DataItem 
+            item={item} 
+            onPress={() => handleItemPress(item.id)} 
+          />
+        )}
+      />
+    </View>
+  );
+}
+```
+
+**When to use useCallback:**
+
+- Handler is passed to a component wrapped in `React.memo`
+- Handler is used in dependency arrays of other hooks
+- Handler is passed to FlatList `renderItem` or other optimized callbacks
+- Handler is used in multiple places and you want a stable reference
+
+**When NOT to use useCallback:**
+
+- Handler is only used in current component (not passed to children)
+- Handler dependencies change frequently (memoization provides no benefit)
+- Handler is simple and component isn't memoized
+
+### useMemo for Filtered/Computed Data
+
+Memoize filtered, sorted, or transformed data:
 
 ```typescript
 export function DataList({ items }: DataListProps) {
@@ -827,23 +1022,85 @@ export function DataList({ items }: DataListProps) {
     );
   }, [items, filter]);
 
-  // Memoize callback
-  const handleItemPress = useCallback((id: string) => {
-    router.push(`/detail/${id}`);
-  }, [router]);
+  // Memoize sorted data
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => 
+      a.title.localeCompare(b.title)
+    );
+  }, [filteredItems]);
 
   return (
     <FlatList
-      data={filteredItems}
-      renderItem={({ item }) => (
-        <DataItem item={item} onPress={() => handleItemPress(item.id)} />
-      )}
+      data={sortedItems}
+      renderItem={({ item }) => <DataItem item={item} />}
     />
   );
 }
 ```
 
+### Dependency Arrays Best Practices
+
+**Include all values used inside the hook:**
+
+```typescript
+// ✅ Correct - all dependencies included
+const backgroundColor = useMemo(() => {
+  if (disabled) return colors.border;
+  return colors.primary;
+}, [disabled, colors.border, colors.primary]);
+
+// ❌ Incorrect - missing dependencies
+const backgroundColor = useMemo(() => {
+  if (disabled) return colors.border;
+  return colors.primary;
+}, [disabled]); // Missing colors.border and colors.primary
+```
+
+**For nested object properties:**
+
+```typescript
+// ✅ Include specific nested properties
+const styles = useMemo(
+  () => ({
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semibold,
+  }),
+  [typography.fontSize.md, typography.fontWeight.semibold]
+);
+
+// ✅ Or include entire object if all properties are used
+const styles = useMemo(
+  () => ({
+    color: colors.text,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+  }),
+  [colors] // OK if all color properties are used
+);
+```
+
+**For theme objects:**
+
+```typescript
+// When using theme from context
+const { colors, spacing, borderRadius } = useTheme();
+
+// Include specific properties that are used
+const buttonStyles = useMemo(
+  () => ({
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+  }),
+  [colors.primary, spacing.md, borderRadius.md]
+);
+```
+
+**ESLint rule:** Always use `eslint-plugin-react-hooks` with `exhaustive-deps` rule to catch missing dependencies.
+
 ### FlatList Optimization
+
+Optimize FlatList performance with memoized callbacks and performance props:
 
 ```typescript
 export function DataList({ items }: DataListProps) {
@@ -862,10 +1119,48 @@ export function DataList({ items }: DataListProps) {
       maxToRenderPerBatch={10}
       updateCellsBatchingPeriod={50}
       windowSize={21}
+      initialNumToRender={10}
     />
   );
 }
 ```
+
+**Key optimizations:**
+
+- `renderItem` and `keyExtractor` should always be memoized with `useCallback`
+- `removeClippedSubviews` removes off-screen views from native view hierarchy
+- `maxToRenderPerBatch` controls batch size for rendering
+- `windowSize` controls how many screen lengths to render
+- `initialNumToRender` controls initial render count
+
+### When NOT to Optimize
+
+**Don't optimize prematurely.** Only add optimizations when:
+
+1. **Performance profiling shows issues** - Use React DevTools Profiler
+2. **Component is in a performance-critical path** - Lists, animations, frequent updates
+3. **Optimization provides measurable benefit** - Not just theoretical
+
+**Examples of unnecessary optimization:**
+
+```typescript
+// ❌ Unnecessary - simple assignment
+const title = useMemo(() => props.title, [props.title]);
+
+// ❌ Unnecessary - trivial computation
+const doubled = useMemo(() => value * 2, [value]);
+
+// ❌ Unnecessary - handler only used locally
+const handlePress = useCallback(() => {
+  setCount(count + 1);
+}, [count]); // If not passed to memoized child, useCallback is unnecessary
+```
+
+**Performance profiling:**
+
+- Use React DevTools Profiler to identify slow renders
+- Measure before and after adding optimizations
+- Focus on components that render frequently or are expensive
 
 ## Best Practices
 
@@ -878,8 +1173,13 @@ export function DataList({ items }: DataListProps) {
 - ✅ Extract reusable logic into custom hooks
 - ✅ Use StyleSheet.create for styles
 - ✅ Add test IDs for testability
-- ✅ Memoize expensive computations
-- ✅ Use React.memo for expensive components
+- ✅ Memoize expensive computations with `useMemo`
+- ✅ Use `React.memo` for reusable UI components and components in lists
+- ✅ Use `useCallback` for handlers passed to memoized children
+- ✅ Memoize style arrays that depend on props or theme
+- ✅ Include all dependencies in `useMemo` and `useCallback` dependency arrays
+- ✅ Profile performance before optimizing
+- ✅ Use ESLint `exhaustive-deps` rule to catch missing dependencies
 
 ### Don'ts
 
@@ -888,7 +1188,11 @@ export function DataList({ items }: DataListProps) {
 - ❌ Don't use inline styles for static styles
 - ❌ Don't forget to handle loading and error states
 - ❌ Don't skip TypeScript types
-- ❌ Don't over-optimize prematurely
+- ❌ Don't over-optimize prematurely (profile first)
+- ❌ Don't use `useMemo` for simple value assignments
+- ❌ Don't use `useCallback` for handlers only used locally
+- ❌ Don't forget to include dependencies in dependency arrays
+- ❌ Don't memoize values that change on every render anyway
 
 ## Next Steps
 
