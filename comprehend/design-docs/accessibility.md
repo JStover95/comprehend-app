@@ -6,8 +6,97 @@
 
 This document outlines accessibility requirements, patterns, and best practices for building inclusive React Native applications that work for everyone.
 
+## React Native AMA
+
+**[React Native AMA](https://github.com/FormidableLabs/react-native-ama)** (Accessibility Made Accessible) is a library that enforces accessibility best practices and provides enhanced accessibility components for React Native applications.
+
+### What is React Native AMA?
+
+React Native AMA is a library that:
+
+- Provides enhanced accessibility components that wrap React Native primitives
+- Performs runtime accessibility checks during development
+- Enforces minimum accessibility requirements
+- Offers comprehensive guidelines and best practices
+- Provides hooks and utilities for accessibility features
+
+### Installation and Setup
+
+#### Install the Package
+
+Install React Native AMA using your preferred package manager:
+
+```bash
+# Using npm
+npm install @react-native-ama/core @react-native-ama/react-native @react-native-ama/forms
+
+# Using yarn
+yarn add @react-native-ama/core @react-native-ama/react-native @react-native-ama/forms
+```
+
+#### Wrap Your App with AMAProvider
+
+Wrap your root application component with `AMAProvider` to enable React Native AMA features:
+
+```typescript
+import { AMAProvider } from "@react-native-ama/core";
+
+export default function App() {
+  return (
+    <AMAProvider>
+      {/* Your app components */}
+    </AMAProvider>
+  );
+}
+```
+
+The `AMAProvider` should be placed at the root of your component tree, typically in your root layout or main app component.
+
+Instead of using standard React Native components, use the enhanced components from `react-native-ama`:
+
+```typescript
+// ✅ Use react-native-ama components
+import { Text, TouchableOpacity } from "@react-native-ama/react-native";
+import { TextInput, Form } from "@react-native-ama/forms";
+
+// ❌ Avoid standard React Native components
+import { Text, TouchableOpacity } from "react-native";
+import { TextInput } from "react-native";
+```
+
+### Documentation
+
+For detailed documentation on React Native AMA, refer to:
+
+- **[React Native AMA Documentation](https://formidable.com/open-source/react-native-ama/)**
+- **[React Native AMA GitHub Repository](https://github.com/FormidableLabs/react-native-ama)**
+- **[React Native AMA NPM Package](https://www.npmjs.com/package/@react-native-ama/core)**
+
+### Example Usage
+
+Here are practical examples of using React Native AMA components:
+
+**Button Component:**
+
+- Uses `TouchableOpacity` and `Text` from `@react-native-ama/react-native`
+- Includes proper accessibility labels, roles, and states
+- See the [Button component example](#button-with-state) below
+
+**Input Component:**
+
+- Uses `TextInput` from `@react-native-ama/forms` and `Text` from `@react-native-ama/react-native`
+- Includes label components, error handling, and validation states
+- See the [Forms and Input section](#forms-and-input) below
+
+**Text Component:**
+
+- Uses `Text` from `@react-native-ama/react-native`
+- Supports Dynamic Type (iOS) and accessibility labels
+- See the [Alternative Text section](#alternative-text) below
+
 ## Table of Contents
 
+- [React Native AMA](#react-native-ama)
 - [Core Principles](#core-principles)
 - [WCAG Standards](#wcag-standards)
 - [Color and Contrast](#color-and-contrast)
@@ -54,7 +143,7 @@ Accessible applications must be:
 ### Key Success Criteria
 
 | Criterion | Level | Requirement |
-|-----------|-------|-------------|
+| ----------- | ------- | ------------- |
 | Color Contrast (Text) | AA | 4.5:1 for normal text, 3:1 for large text |
 | Color Contrast (UI) | AA | 3:1 for UI components and graphical objects |
 | Touch Target Size | AA | Minimum 44x44 points |
@@ -216,7 +305,8 @@ export const TOUCH_TARGET = {
 
 ```typescript
 // components/AccessibleButton.tsx
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
 import { TOUCH_TARGET } from '@/constants/accessibility';
 
 export function AccessibleButton({ title, onPress, icon }: ButtonProps) {
@@ -234,20 +324,6 @@ export function AccessibleButton({ title, onPress, icon }: ButtonProps) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    minHeight: TOUCH_TARGET.RECOMMENDED_SIZE,
-    minWidth: TOUCH_TARGET.RECOMMENDED_SIZE,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 16,
-  },
-});
 ```
 
 ### Icon-Only Buttons
@@ -255,6 +331,8 @@ const styles = StyleSheet.create({
 Icon buttons need special attention:
 
 ```typescript
+import { TouchableOpacity } from '@react-native-ama/react-native';
+
 export function IconButton({ icon, onPress, accessibilityLabel }: IconButtonProps) {
   return (
     <TouchableOpacity
@@ -269,15 +347,6 @@ export function IconButton({ icon, onPress, accessibilityLabel }: IconButtonProp
   );
 }
 
-const styles = StyleSheet.create({
-  iconButton: {
-    width: TOUCH_TARGET.RECOMMENDED_SIZE,
-    height: TOUCH_TARGET.RECOMMENDED_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
 // Usage
 <IconButton 
   icon="search" 
@@ -288,9 +357,29 @@ const styles = StyleSheet.create({
 
 ## Screen Reader Support
 
+### Using React Native AMA Components
+
+**React Native AMA** provides enhanced components that automatically handle many accessibility requirements. Always prefer using components from `@react-native-ama/react-native` and `@react-native-ama/forms` over standard React Native components.
+
+```typescript
+// ✅ Use React Native AMA components
+import { Text, TouchableOpacity } from "@react-native-ama/react-native";
+import { TextInput } from "@react-native-ama/forms";
+
+// ❌ Avoid standard React Native components
+import { Text, TouchableOpacity, TextInput } from "react-native";
+```
+
+React Native AMA components:
+
+- Automatically enforce accessibility requirements
+- Provide runtime warnings for missing accessibility props
+- Include enhanced accessibility features
+- Follow WCAG 2.1 AA standards
+
 ### Accessibility Props
 
-React Native provides several accessibility props:
+React Native provides several accessibility props (enhanced by React Native AMA):
 
 ```typescript
 export interface AccessibilityProps {
@@ -369,6 +458,8 @@ export type AccessibilityRole =
 #### Button with State
 
 ```typescript
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
+
 export function ToggleButton({ isActive, onPress, label }: ToggleButtonProps) {
   return (
     <TouchableOpacity
@@ -423,6 +514,9 @@ export function VolumeSlider({ value, onChange }: SliderProps) {
 #### Loading States
 
 ```typescript
+import { ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
+
 export function LoadingButton({ loading, onPress, title }: LoadingButtonProps) {
   return (
     <TouchableOpacity
@@ -446,6 +540,9 @@ export function LoadingButton({ loading, onPress, title }: LoadingButtonProps) {
 #### Live Regions for Dynamic Content
 
 ```typescript
+import { View } from 'react-native';
+import { Text } from '@react-native-ama/react-native';
+
 export function NotificationBanner({ message, type }: NotificationProps) {
   return (
     <View
@@ -468,6 +565,10 @@ export function NotificationBanner({ message, type }: NotificationProps) {
 Ensure logical tab order through content:
 
 ```typescript
+import { View } from 'react-native';
+import { Text, TouchableOpacity } from '@react-native-ama/react-native';
+import { TextInput } from '@react-native-ama/forms';
+
 // Use importantForAccessibility to control focus order
 <View>
   <TextInput 
@@ -495,6 +596,8 @@ Ensure logical tab order through content:
 For complex layouts, provide skip navigation:
 
 ```typescript
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
+
 export function SkipToContent({ targetRef }: SkipToContentProps) {
   const handleSkip = () => {
     targetRef.current?.focus();
@@ -520,7 +623,8 @@ export function SkipToContent({ targetRef }: SkipToContentProps) {
 
 ```typescript
 import { useRef } from 'react';
-import { TextInput, AccessibilityInfo } from 'react-native';
+import { View, AccessibilityInfo } from 'react-native';
+import { TextInput } from '@react-native-ama/forms';
 
 export function LoginForm() {
   const emailRef = useRef<TextInput>(null);
@@ -566,6 +670,7 @@ export function LoginForm() {
 
 ```typescript
 import { useState } from 'react';
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
 
 export function FocusableButton({ title, onPress }: ButtonProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -587,19 +692,6 @@ export function FocusableButton({ title, onPress }: ButtonProps) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  buttonFocused: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '20', // 20% opacity
-  },
-});
 ```
 
 ## Alternative Text
@@ -607,6 +699,9 @@ const styles = StyleSheet.create({
 ### Images
 
 ```typescript
+import { TouchableOpacity } from '@react-native-ama/react-native';
+import { Image } from 'react-native';
+
 // Decorative image (ignored by screen readers)
 <Image 
   source={decorativePattern} 
@@ -635,6 +730,9 @@ const styles = StyleSheet.create({
 ### Icons
 
 ```typescript
+import { View } from 'react-native';
+import { Text, TouchableOpacity } from '@react-native-ama/react-native';
+
 // Icon with adjacent text (hide icon from screen reader)
 <View style={{ flexDirection: 'row' }}>
   <Icon 
@@ -665,55 +763,48 @@ const styles = StyleSheet.create({
 ### Labels and Instructions
 
 ```typescript
+import { View } from 'react-native';
+import { Text } from '@react-native-ama/react-native';
+import { TextInput } from '@react-native-ama/forms';
+
 export function FormField({ label, hint, error, ...inputProps }: FormFieldProps) {
   const inputId = useId();
 
+  const labelComponent = (
+    <Text style={styles.label}>
+      {label}
+      {inputProps.required && (
+        <Text style={styles.required}>{' *'}</Text>
+      )}
+    </Text>
+  );
+
+  const errorComponent = error ? (
+    <Text 
+      accessibilityRole="alert"
+      style={styles.error}
+    >
+      {error}
+    </Text>
+  ) : undefined;
+
   return (
     <View>
-      <Text 
-        nativeID={`${inputId}-label`}
-        style={styles.label}
-      >
-        {label}
-        {inputProps.required && (
-          <Text 
-            accessibilityLabel="required"
-            style={styles.required}
-          >
-            {' *'}
-          </Text>
-        )}
-      </Text>
-      
-      {hint && (
-        <Text 
-          nativeID={`${inputId}-hint`}
-          style={styles.hint}
-        >
-          {hint}
-        </Text>
-      )}
-      
       <TextInput
         {...inputProps}
         accessibilityLabel={label}
         accessibilityHint={hint}
         accessibilityRequired={inputProps.required}
         accessibilityInvalid={!!error}
-        accessibilityDescribedBy={
-          error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined
-        }
         style={[styles.input, error && styles.inputError]}
+        labelComponent={labelComponent}
+        errorComponent={errorComponent}
+        hasValidation={!!error}
       />
       
-      {error && (
-        <Text 
-          nativeID={`${inputId}-error`}
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          style={styles.error}
-        >
-          {error}
+      {hint && !error && (
+        <Text style={styles.hint}>
+          {hint}
         </Text>
       )}
     </View>
@@ -721,9 +812,14 @@ export function FormField({ label, hint, error, ...inputProps }: FormFieldProps)
 }
 ```
 
+**Note**: React Native AMA's `TextInput` component supports `labelComponent` and `errorComponent` props for better accessibility integration. These props allow you to pass React elements that will be properly associated with the input for screen readers.
+
 ### Error Handling
 
 ```typescript
+import { AccessibilityInfo } from 'react-native';
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
+
 export function SubmitButton({ onSubmit, errors }: SubmitButtonProps) {
   const handlePress = () => {
     const errorMessages = Object.values(errors).filter(Boolean);
@@ -919,19 +1015,6 @@ import { Platform } from 'react-native';
 >
   <Text>iOS Button</Text>
 </TouchableOpacity>
-
-// Dynamic Type support
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 16,
-    // Scales with iOS Dynamic Type
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-});
 ```
 
 ### Android Specific
@@ -951,6 +1034,9 @@ const styles = StyleSheet.create({
 ### Accessible Card Component
 
 ```typescript
+import { View, Image, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text } from '@react-native-ama/react-native';
+
 export function AccessibleCard({ 
   title, 
   description, 
@@ -987,36 +1073,14 @@ export function AccessibleCard({
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    minHeight: 88, // Taller than minimum touch target
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-  },
-  image: {
-    width: 60,
-    height: 60,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  description: {
-    fontSize: 14,
-    color: '#666666',
-  },
-});
 ```
 
 ### Accessible List
 
 ```typescript
+import { View, FlatList } from 'react-native';
+import { Text } from '@react-native-ama/react-native';
+
 export function AccessibleList<T>({ 
   items, 
   renderItem,
@@ -1049,6 +1113,10 @@ export function AccessibleList<T>({
 ### Accessible Modal
 
 ```typescript
+import { useEffect } from 'react';
+import { View, Modal, AccessibilityInfo } from 'react-native';
+import { Text, TouchableOpacity } from '@react-native-ama/react-native';
+
 export function AccessibleModal({ 
   visible, 
   onClose, 
@@ -1103,6 +1171,7 @@ export function AccessibleModal({
 
 ### Do's
 
+- ✅ **Use React Native AMA components** - Always prefer components from `@react-native-ama/react-native` and `@react-native-ama/forms` over standard React Native components
 - ✅ Test with real screen readers (VoiceOver and TalkBack)
 - ✅ Provide meaningful accessibility labels for all interactive elements
 - ✅ Ensure minimum 44x44 point touch targets
@@ -1115,9 +1184,11 @@ export function AccessibleModal({
 - ✅ Announce dynamic content changes
 - ✅ Group related elements logically
 - ✅ Test with diverse user scenarios
+- ✅ Review React Native AMA documentation and examples for implementation patterns
 
 ### Don'ts
 
+- ❌ **Don't use standard React Native components** - Avoid `react-native` components when React Native AMA alternatives exist
 - ❌ Don't rely on color alone to convey information
 - ❌ Don't create touch targets smaller than 44x44 points
 - ❌ Don't disable accessibility features without good reason
@@ -1128,15 +1199,17 @@ export function AccessibleModal({
 - ❌ Don't trap keyboard focus
 - ❌ Don't use images of text instead of actual text
 - ❌ Don't assume everyone interacts the same way
+- ❌ Don't ignore React Native AMA runtime warnings during development
 
 ## Resources
 
-### Documentation
-
-- [React Native Accessibility](https://reactnative.dev/docs/accessibility)
-- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
-- [Apple Human Interface Guidelines - Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
-- [Material Design - Accessibility](https://material.io/design/usability/accessibility.html)
+- **[React Native AMA Documentation](https://formidable.com/open-source/react-native-ama/)** - Comprehensive accessibility library for React Native applications
+- **[React Native AMA GitHub Repository](https://github.com/FormidableLabs/react-native-ama)** - Source code and issues
+- **[React Native AMA NPM Packages](https://www.npmjs.com/package/@react-native-ama/core)** - Package information
+- [React Native Accessibility](https://reactnative.dev/docs/accessibility) - React Native's built-in accessibility features
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/) - Web Content Accessibility Guidelines
+- [Apple Human Interface Guidelines - Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility) - iOS accessibility guidelines
+- [Material Design - Accessibility](https://material.io/design/usability/accessibility.html) - Android accessibility guidelines
 
 ### Tools
 
