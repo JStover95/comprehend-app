@@ -10,6 +10,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "@/contexts/ThemeContext/Provider";
 import { useTheme } from "@/contexts/ThemeContext/use-theme";
+import { AMAProvider } from "@react-native-ama/core";
 
 /**
  * ThemedStatusBar component
@@ -29,9 +30,11 @@ function ThemedStatusBar() {
  */
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <ThemedStatusBar />
-      <Stack />
-    </ThemeProvider>
+    <AMAProvider>
+      <ThemeProvider>
+        <ThemedStatusBar />
+        <Stack />
+      </ThemeProvider>
+    </AMAProvider>
   );
 }
