@@ -181,17 +181,17 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Tests**:
 
-- [ ] T034 [P] [US4] Create comprehend/**tests**/constants/config.test.ts testing environment variable loading, validation, and type safety following comprehend/design-docs/types-and-configuration.md
+- [X] T034 [P] [US4] Create comprehend/**tests**/constants/config.test.ts testing environment variable loading, validation, and type safety following comprehend/design-docs/types-and-configuration.md
 
 **Implementation**:
 
-- [ ] T035 [US4] Create comprehend/constants/config.ts with EnvironmentConfig type, environment variable loading via expo-constants, and validation function following comprehend/design-docs/types-and-configuration.md
-- [ ] T036 [US4] Create comprehend/.env.example file with EXPO_PUBLIC_API_URL, EXPO_PUBLIC_AWS_REGION, EXPO_PUBLIC_ENV, EXPO_PUBLIC_DEBUG variables following contracts/README.md
-- [ ] T037 [US4] Create comprehend/.env.development file with development environment values
-- [ ] T038 [US4] Create comprehend/.env.staging file with staging environment values (optional, can use .env.example as template)
-- [ ] T039 [US4] Create comprehend/.env.production file with production environment values (optional, can use .env.example as template)
-- [ ] T040 [US4] Update comprehend/app/_layout.tsx to call validateEnv() on app startup and handle validation errors gracefully
-- [ ] T041 [US4] Update comprehend/app/index.tsx to display current environment configuration (for development/debugging purposes)
+- [X] T035 [US4] Create comprehend/constants/config.ts with EnvironmentConfig type, environment variable loading via expo-constants, and validation function following comprehend/design-docs/types-and-configuration.md
+- [X] T036 [US4] Create comprehend/.env.example file with EXPO_PUBLIC_API_URL, EXPO_PUBLIC_AWS_REGION, EXPO_PUBLIC_ENV, EXPO_PUBLIC_DEBUG variables following contracts/README.md
+- [X] T037 [US4] Create comprehend/.env.development file with development environment values
+- [X] T038 [US4] Create comprehend/.env.staging file with staging environment values (optional, can use .env.example as template)
+- [X] T039 [US4] Create comprehend/.env.production file with production environment values (optional, can use .env.example as template)
+- [X] T040 [US4] Update comprehend/app/_layout.tsx to call validateEnv() on app startup and handle validation errors gracefully
+- [X] T041 [US4] Update comprehend/app/index.tsx to display current environment configuration (for development/debugging purposes)
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
