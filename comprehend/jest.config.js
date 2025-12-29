@@ -1,42 +1,10 @@
 const config = {
-  verbose: true,
-  testEnvironment: "node",
-  transform: {
-    "^.+\\.(ts|tsx)$": "ts-jest",
-  },
-  maxWorkers: 1,
   preset: "jest-expo",
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   transformIgnorePatterns: [
-    "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)",
+    "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)",
   ],
-  testMatch: [
-    "**/__tests__/**/*.test.[jt]s?(x)",
-    "**/?(*.)+(spec|test).[jt]s?(x)",
-  ],
-  collectCoverageFrom: [
-    "**/*.{js,jsx,ts,tsx}",
-    "!**/*.d.ts",
-    "!**/node_modules/**",
-    "!**/__tests__/**",
-    "!**/coverage/**",
-    "!jest.config.js",
-    "!jest.setup.js",
-    "!babel.config.js",
-    "!metro.config.js",
-    "!app.json",
-  ],
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1",
-  },
-  globals: {
-    "ts-jest": {
-      tsconfig: {
-        jsx: "react",
-      },
-    },
-  },
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  testMatch: ["**/*.test.tsx", "**/*.test.ts"],
 };
 
 export default config;
