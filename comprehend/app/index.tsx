@@ -1,149 +1,255 @@
 /**
- * Index screen - Theme demonstration
+ * Index screen - Component showcase and theme demonstration
  *
- * Demonstrates theme switching with buttons for light/dark/system modes
- * and verifies theme colors are applied correctly
+ * Showcases all base components (Button variants, Input with error states, Text typography scales)
+ * and demonstrates theme switching with buttons for light/dark/system modes.
+ * Verifies theme colors are applied correctly to all components.
  *
  * Following patterns from:
  * - comprehend/design-docs/styling-pattern.md - Theme system usage
  * - comprehend/design-docs/context-pattern.md - Context usage
+ * - comprehend/design-docs/component-architecture.md - Component usage
  */
 
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext/use-theme";
+import { Button, Input, Text } from "@/components/ui";
 import type { ThemeMode } from "@/types";
+import { useState } from "react";
+import { Form } from "@react-native-ama/forms";
 
 export default function Index() {
-  const { mode, colors, isDark, setTheme, spacing, borderRadius } = useTheme();
+  const { mode, colors, isDark, setTheme, spacing } = useTheme();
+  const [inputValue, setInputValue] = useState("");
+  const [inputError, setInputError] = useState<string | undefined>(undefined);
 
   const handleThemeChange = (newMode: ThemeMode) => {
     setTheme(newMode);
   };
 
+  const handleInputChange = (text: string) => {
+    setInputValue(text);
+    // Clear error when user types
+    if (inputError) {
+      setInputError(undefined);
+    }
+  };
+
+  const handleValidateInput = () => {
+    if (!inputValue.trim()) {
+      setInputError("This field is required");
+    } else {
+      setInputError(undefined);
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          Theme System Demo
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
+      >
+        <Text variant="heading" style={styles.title}>
+          Component Showcase
         </Text>
 
-        <View style={styles.infoSection}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>
-            Current Mode:
+        {/* Theme Info */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Theme System
           </Text>
-          <Text style={[styles.value, { color: colors.text }]}>{mode}</Text>
-        </View>
-
-        <View style={styles.infoSection}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>
-            Is Dark:
-          </Text>
-          <Text style={[styles.value, { color: colors.text }]}>
-            {isDark ? "Yes" : "No"}
+          <Text variant="body" color="secondary">
+            Current Mode: {mode} ({isDark ? "Dark" : "Light"})
           </Text>
         </View>
 
-        <View style={styles.colorDemo}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Theme Colors:
+        {/* Button Variants */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Button Variants
           </Text>
-          <View
-            style={[
-              styles.colorBox,
-              { backgroundColor: colors.primary, marginBottom: spacing.sm },
-            ]}
-          >
-            <Text style={[styles.colorLabel, { color: "#FFFFFF" }]}>
-              Primary
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.colorBox,
-              { backgroundColor: colors.secondary, marginBottom: spacing.sm },
-            ]}
-          >
-            <Text style={[styles.colorLabel, { color: "#FFFFFF" }]}>
-              Secondary
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.colorBox,
-              {
-                backgroundColor: colors.surface,
-                marginBottom: spacing.sm,
-                borderWidth: 1,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            <Text style={[styles.colorLabel, { color: colors.text }]}>
-              Surface
-            </Text>
-          </View>
+          <Button
+            title="Primary Button"
+            onPress={() => {}}
+            variant="primary"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Secondary Button"
+            onPress={() => {}}
+            variant="secondary"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Outline Button"
+            onPress={() => {}}
+            variant="outline"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Ghost Button"
+            onPress={() => {}}
+            variant="ghost"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Disabled Button"
+            onPress={() => {}}
+            variant="primary"
+            disabled
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Loading Button"
+            onPress={() => {}}
+            variant="primary"
+            loading
+            style={styles.componentSpacing}
+          />
         </View>
 
-        <View style={styles.buttonContainer}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Switch Theme:
+        {/* Button Sizes */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Button Sizes
           </Text>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                backgroundColor: colors.primary,
-                marginBottom: spacing.sm,
-                borderRadius: borderRadius.md,
-              },
-            ]}
+          <Button
+            title="Small"
+            onPress={() => {}}
+            variant="primary"
+            size="small"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Medium"
+            onPress={() => {}}
+            variant="primary"
+            size="medium"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Large"
+            onPress={() => {}}
+            variant="primary"
+            size="large"
+            style={styles.componentSpacing}
+          />
+        </View>
+
+        {/* Input Component */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Input Component
+          </Text>
+          <Form onSubmit={() => true}>
+            <Input
+              label="Email Address"
+              value={inputValue}
+              onChangeText={handleInputChange}
+              placeholder="Enter your email"
+              keyboardType="email-address"
+              helperText="We'll never share your email"
+              style={styles.componentSpacing}
+            />
+            <Input
+              label="Password"
+              value=""
+              onChangeText={() => {}}
+              placeholder="Enter your password"
+              secureTextEntry
+              required
+              style={styles.componentSpacing}
+            />
+            <Input
+              label="Input with Error"
+              value="invalid@email"
+              onChangeText={() => {}}
+              error={inputError || "Please enter a valid email address"}
+              keyboardType="email-address"
+              style={styles.componentSpacing}
+            />
+            <Button
+              title="Validate Input"
+              onPress={handleValidateInput}
+              variant="outline"
+              size="small"
+            />
+          </Form>
+        </View>
+
+        {/* Text Typography Scales */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Text Typography Scales
+          </Text>
+          <Text variant="heading" style={styles.componentSpacing}>
+            Heading Text
+          </Text>
+          <Text variant="subheading" style={styles.componentSpacing}>
+            Subheading Text
+          </Text>
+          <Text variant="body" style={styles.componentSpacing}>
+            Body Text - This is the default text style for regular content.
+          </Text>
+          <Text variant="caption" style={styles.componentSpacing}>
+            Caption Text - Used for smaller supporting text.
+          </Text>
+        </View>
+
+        {/* Text Colors */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Text Colors
+          </Text>
+          <Text variant="body" color="primary" style={styles.componentSpacing}>
+            Primary Text Color
+          </Text>
+          <Text
+            variant="body"
+            color="secondary"
+            style={styles.componentSpacing}
+          >
+            Secondary Text Color
+          </Text>
+          <Text variant="body" color="tertiary" style={styles.componentSpacing}>
+            Tertiary Text Color
+          </Text>
+          <Text variant="body" color="error" style={styles.componentSpacing}>
+            Error Text Color
+          </Text>
+          <Text variant="body" color="success" style={styles.componentSpacing}>
+            Success Text Color
+          </Text>
+          <Text variant="body" color="warning" style={styles.componentSpacing}>
+            Warning Text Color
+          </Text>
+        </View>
+
+        {/* Theme Switching */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Switch Theme
+          </Text>
+          <Button
+            title="Light Mode"
             onPress={() => handleThemeChange("light")}
-            accessibilityRole="button"
-            accessibilityLabel="Switch to light theme"
-          >
-            <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>
-              Light Mode
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                backgroundColor: colors.secondary,
-                marginBottom: spacing.sm,
-                borderRadius: borderRadius.md,
-              },
-            ]}
+            variant="primary"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="Dark Mode"
             onPress={() => handleThemeChange("dark")}
-            accessibilityRole="button"
-            accessibilityLabel="Switch to dark theme"
-          >
-            <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>
-              Dark Mode
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: borderRadius.md,
-              },
-            ]}
+            variant="secondary"
+            style={styles.componentSpacing}
+          />
+          <Button
+            title="System Mode"
             onPress={() => handleThemeChange("system")}
-            accessibilityRole="button"
-            accessibilityLabel="Switch to system theme"
-          >
-            <Text style={[styles.buttonText, { color: colors.text }]}>
-              System Mode
-            </Text>
-          </TouchableOpacity>
+            variant="outline"
+            style={styles.componentSpacing}
+          />
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -152,61 +258,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
-    padding: 24,
-    justifyContent: "center",
+  },
+  content: {
+    paddingBottom: 32,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 32,
+    marginBottom: 24,
     textAlign: "center",
   },
-  infoSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 16,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: "600",
+  section: {
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
     marginBottom: 16,
-    marginTop: 24,
   },
-  colorDemo: {
-    marginTop: 8,
-  },
-  colorBox: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 60,
-  },
-  colorLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  buttonContainer: {
-    marginTop: 8,
-  },
-  button: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 44, // WCAG 2.1 AA minimum touch target
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
+  componentSpacing: {
+    marginBottom: 12,
   },
 });
