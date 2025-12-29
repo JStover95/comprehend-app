@@ -10,6 +10,7 @@
  * - comprehend/design-docs/styling-pattern.md - Theme-aware styling
  */
 
+import React, { useMemo } from "react";
 import { ActivityIndicator, StyleSheet } from "react-native";
 import { TouchableOpacity, Text } from "@react-native-ama/react-native";
 import { useTheme } from "@/contexts/ThemeContext/use-theme";
@@ -41,7 +42,7 @@ export interface ButtonProps extends ViewComponentProps {
  * - Proper accessibility labels and roles
  * - Theme-aware colors with sufficient contrast
  */
-export function Button({
+function ButtonComponent({
   title,
   onPress,
   variant = "primary",
@@ -55,7 +56,7 @@ export function Button({
 }: ButtonProps) {
   const { colors, borderRadius } = useTheme();
 
-  const getBackgroundColor = () => {
+  const backgroundColor = useMemo(() => {
     if (disabled || loading) return colors.border;
     switch (variant) {
       case "primary":
@@ -66,9 +67,16 @@ export function Button({
       case "ghost":
         return "transparent";
     }
-  };
+  }, [
+    variant,
+    disabled,
+    loading,
+    colors.border,
+    colors.primary,
+    colors.secondary,
+  ]);
 
-  const getTextColor = () => {
+  const textColor = useMemo(() => {
     if (disabled || loading) return colors.textSecondary;
     switch (variant) {
       case "primary":
@@ -78,34 +86,51 @@ export function Button({
       case "ghost":
         return colors.primary;
     }
-  };
+  }, [variant, disabled, loading, colors.textSecondary, colors.primary]);
 
-  const getBorderColor = () => {
+  const borderColor = useMemo(() => {
     if (disabled || loading) return colors.border;
     return variant === "outline" ? colors.primary : "transparent";
-  };
+  }, [variant, disabled, loading, colors.border, colors.primary]);
 
-  const buttonStyles = [
-    styles.button,
-    styles[`button_${size}`],
-    {
-      backgroundColor: getBackgroundColor(),
-      borderColor: getBorderColor(),
-      borderRadius: borderRadius.md,
-      opacity: disabled && !loading ? 0.5 : 1,
-    },
-    style,
-  ];
+  const buttonStyles = useMemo(
+    () => [
+      styles.button,
+      styles[`button_${size}`],
+      {
+        backgroundColor,
+        borderColor,
+        borderRadius: borderRadius.md,
+        opacity: disabled && !loading ? 0.5 : 1,
+      },
+      style,
+    ],
+    [
+      size,
+      backgroundColor,
+      borderColor,
+      borderRadius.md,
+      disabled,
+      loading,
+      style,
+    ],
+  );
 
-  const textStyles = [
-    styles.text,
-    styles[`text_${size}`],
-    {
-      color: getTextColor(),
-    },
-  ];
+  const textStyles = useMemo(
+    () => [
+      styles.text,
+      styles[`text_${size}`],
+      {
+        color: textColor,
+      },
+    ],
+    [size, textColor],
+  );
 
-  const effectiveLabel = accessibilityLabel || title;
+  const effectiveLabel = useMemo(
+    () => accessibilityLabel || title,
+    [accessibilityLabel, title],
+  );
 
   return (
     <TouchableOpacity
@@ -120,7 +145,7 @@ export function Button({
       testID={testID || BUTTON_IDS.CONTAINER}
     >
       {loading ? (
-        <ActivityIndicator color={getTextColor()} testID={BUTTON_IDS.LOADING} />
+        <ActivityIndicator color={textColor} testID={BUTTON_IDS.LOADING} />
       ) : (
         <Text style={textStyles} testID={BUTTON_IDS.TEXT}>
           {title}
@@ -129,6 +154,8 @@ export function Button({
     </TouchableOpacity>
   );
 }
+
+export const Button = React.memo(ButtonComponent);
 
 const styles = StyleSheet.create({
   button: {

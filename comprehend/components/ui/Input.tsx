@@ -10,14 +10,15 @@
  * - comprehend/design-docs/styling-pattern.md - Theme-aware styling
  */
 
+import React, { useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text } from "@react-native-ama/react-native";
 import { TextInput } from "@react-native-ama/forms";
 import { useTheme } from "@/contexts/ThemeContext/use-theme";
 import { INPUT_IDS } from "@/components/components.ids";
-import type { TextComponentProps } from "@/types";
+import type { BaseComponentProps } from "@/types";
 
-export interface InputProps extends TextComponentProps {
+export interface InputProps extends BaseComponentProps {
   /** Input label */
   label: string;
   /** Input value */
@@ -48,7 +49,7 @@ export interface InputProps extends TextComponentProps {
  * - Accessibility labels and hints
  * - Theme-aware colors with sufficient contrast
  */
-export function Input({
+function InputComponent({
   label,
   value,
   onChangeText,
@@ -62,58 +63,82 @@ export function Input({
   testID,
   accessibilityLabel,
   accessibilityHint,
-  style,
 }: InputProps) {
   const { colors, spacing, borderRadius, typography } = useTheme();
 
-  const effectiveLabel = accessibilityLabel || label;
-  const effectiveHint = accessibilityHint || helperText;
-
-  const inputStyles = {
-    backgroundColor: colors.surface,
-    borderColor: error ? colors.error : colors.border,
-    borderWidth: error ? 2 : 1,
-    borderRadius: borderRadius.md,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: typography.fontSize.md,
-    minHeight: 44, // WCAG 2.1 AA minimum touch target
-    disabled,
-    style,
-  };
-
-  const labelComponent = (
-    <Text
-      style={[
-        styles.label,
-        {
-          color: colors.text,
-          fontSize: typography.fontSize.sm,
-        },
-      ]}
-      testID={INPUT_IDS.LABEL}
-    >
-      {label}
-      {required && <Text style={{ color: colors.error }}> *</Text>}
-    </Text>
+  const effectiveLabel = useMemo(
+    () => accessibilityLabel || label,
+    [accessibilityLabel, label],
   );
 
-  const errorComponent = error ? (
-    <Text
-      style={[
-        styles.errorText,
-        {
-          color: colors.error,
-          fontSize: typography.fontSize.sm,
-        },
-      ]}
-      testID={INPUT_IDS.ERROR}
-      accessibilityRole="alert"
-    >
-      {error}
-    </Text>
-  ) : undefined;
+  const effectiveHint = useMemo(
+    () => accessibilityHint || helperText,
+    [accessibilityHint, helperText],
+  );
+
+  const inputStyles = useMemo(
+    () => ({
+      backgroundColor: colors.surface,
+      borderColor: error ? colors.error : colors.border,
+      borderWidth: error ? 2 : 1,
+      borderRadius: borderRadius.md,
+      color: colors.text,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      fontSize: typography.fontSize.md,
+      minHeight: 44, // WCAG 2.1 AA minimum touch target
+    }),
+    [
+      colors.surface,
+      colors.error,
+      colors.border,
+      colors.text,
+      error,
+      borderRadius.md,
+      spacing.md,
+      spacing.sm,
+      typography.fontSize.md,
+    ],
+  );
+
+  const labelComponent = useMemo(
+    () => (
+      <Text
+        style={[
+          styles.label,
+          {
+            color: colors.text,
+            fontSize: typography.fontSize.sm,
+          },
+        ]}
+        testID={INPUT_IDS.LABEL}
+      >
+        {label}
+        {required && <Text style={{ color: colors.error }}> *</Text>}
+      </Text>
+    ),
+    [label, required, colors.text, colors.error, typography.fontSize.sm],
+  );
+
+  const errorComponent = useMemo(
+    () =>
+      error ? (
+        <Text
+          style={[
+            styles.errorText,
+            {
+              color: colors.error,
+              fontSize: typography.fontSize.sm,
+            },
+          ]}
+          testID={INPUT_IDS.ERROR}
+          accessibilityRole="alert"
+        >
+          {error}
+        </Text>
+      ) : undefined,
+    [error, colors.error, typography.fontSize.sm],
+  );
 
   return (
     <View style={styles.container} testID={testID || INPUT_IDS.CONTAINER}>
@@ -154,6 +179,8 @@ export function Input({
     </View>
   );
 }
+
+export const Input = React.memo(InputComponent);
 
 const styles = StyleSheet.create({
   container: {

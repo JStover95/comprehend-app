@@ -10,6 +10,7 @@
  * - comprehend/design-docs/styling-pattern.md - Theme-aware styling, typography
  */
 
+import React, { useMemo } from "react";
 import { StyleSheet, Platform } from "react-native";
 import { Text as RNText } from "@react-native-ama/react-native";
 import { useTheme } from "@/contexts/ThemeContext/use-theme";
@@ -46,7 +47,7 @@ export interface TextProps extends TextComponentProps {
  * - Accessibility labels and hints
  * - Dynamic Type support for iOS accessibility
  */
-export function Text({
+function TextComponent({
   children,
   variant = "body",
   color = "primary",
@@ -58,7 +59,7 @@ export function Text({
 }: TextProps) {
   const { colors, typography } = useTheme();
 
-  const getFontSize = () => {
+  const fontSize = useMemo(() => {
     switch (variant) {
       case "heading":
         return typography.fontSize.xl;
@@ -69,9 +70,9 @@ export function Text({
       case "caption":
         return typography.fontSize.sm;
     }
-  };
+  }, [variant, typography.fontSize]);
 
-  const getFontWeight = () => {
+  const fontWeight = useMemo(() => {
     switch (variant) {
       case "heading":
         return typography.fontWeight.bold;
@@ -81,14 +82,14 @@ export function Text({
       case "caption":
         return typography.fontWeight.regular;
     }
-  };
+  }, [variant, typography.fontWeight]);
 
-  const getLineHeight = () => {
-    const fontSize = getFontSize();
-    return fontSize * typography.lineHeight.normal;
-  };
+  const lineHeight = useMemo(
+    () => fontSize * typography.lineHeight.normal,
+    [fontSize, typography.lineHeight.normal],
+  );
 
-  const getTextColor = () => {
+  const textColor = useMemo(() => {
     switch (color) {
       case "primary":
         return colors.text;
@@ -103,27 +104,34 @@ export function Text({
       case "warning":
         return colors.warning;
     }
-  };
+  }, [color, colors]);
 
-  const textStyles = [
-    styles.text,
-    {
-      fontSize: getFontSize(),
-      fontWeight: getFontWeight(),
-      lineHeight: getLineHeight(),
-      color: getTextColor(),
-      // iOS Dynamic Type support
-      ...Platform.select({
-        ios: {
-          fontFamily: "System",
-        },
-      }),
-    },
-    style,
-  ];
+  const textStyles = useMemo(
+    () => [
+      styles.text,
+      {
+        fontSize,
+        fontWeight,
+        lineHeight,
+        color: textColor,
+        // iOS Dynamic Type support
+        ...Platform.select({
+          ios: {
+            fontFamily: "System",
+          },
+        }),
+      },
+      style,
+    ],
+    [fontSize, fontWeight, lineHeight, textColor, style],
+  );
 
-  const effectiveLabel =
-    accessibilityLabel || (typeof children === "string" ? children : undefined);
+  const effectiveLabel = useMemo(
+    () =>
+      accessibilityLabel ||
+      (typeof children === "string" ? children : undefined),
+    [accessibilityLabel, children],
+  );
 
   return (
     <RNText
@@ -138,6 +146,8 @@ export function Text({
     </RNText>
   );
 }
+
+export const Text = React.memo(TextComponent);
 
 const styles = StyleSheet.create({
   text: {
