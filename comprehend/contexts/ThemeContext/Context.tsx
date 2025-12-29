@@ -7,12 +7,7 @@
 
 import { createContext } from "react";
 import type { ThemeMode } from "@/types";
-import type {
-  Colors,
-  Typography,
-  Spacing,
-  BorderRadius,
-} from "@/constants/theme";
+import type { Typography, Spacing, BorderRadius } from "@/constants/theme";
 
 /**
  * Theme colors interface

@@ -35,7 +35,6 @@ export function ThemeProvider({
 }): React.JSX.Element {
   const systemColorScheme = useColorScheme();
   const [mode, setModeState] = useState<ThemeMode>("system");
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load saved theme preference on mount
   useEffect(() => {
@@ -59,8 +58,6 @@ export function ThemeProvider({
     } catch (error) {
       // Handle error gracefully - default to system theme
       console.error("Failed to load theme preference:", error);
-    } finally {
-      setIsInitialized(true);
     }
   };
 
@@ -107,11 +104,8 @@ export function ThemeProvider({
     [mode, colors, isDark, setTheme],
   );
 
-  // Don't render children until theme is initialized to prevent flash
-  if (!isInitialized) {
-    return <>{children}</>;
-  }
-
+  // Always provide context, even during initialization
+  // This ensures useTheme() works correctly in tests and prevents context errors
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
