@@ -74,8 +74,8 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Implementation**:
 
-- [ ] T006 Create comprehend/types/index.ts with shared type definitions (BaseComponentProps, ThemeMode, etc.) following comprehend/design-docs/types-and-configuration.md
-- [ ] T007 Create comprehend/constants/theme.ts with Colors, Typography, Spacing, BorderRadius constants following comprehend/design-docs/styling-pattern.md
+- [X] T006 Create comprehend/types/index.ts with shared type definitions (BaseComponentProps, ThemeMode, etc.) following comprehend/design-docs/types-and-configuration.md
+- [X] T007 Create comprehend/constants/theme.ts with Colors, Typography, Spacing, BorderRadius constants following comprehend/design-docs/styling-pattern.md
 
 ## Phase 3: User Story 1 - Consistent Visual Experience (P1)
 
