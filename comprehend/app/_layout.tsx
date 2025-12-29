@@ -13,6 +13,39 @@ import { useTheme } from "@/contexts/ThemeContext/use-theme";
 import { AMAProvider } from "@react-native-ama/core";
 
 /**
+ * Override console.warn to filter out JSON objects from AMA warnings
+ *
+ * React Native AMA logs warnings with React element objects that clutter the console.
+ * This override extracts only the warning message for AMA warnings.
+ */
+if (typeof console !== "undefined" && console.warn && console.info) {
+  const originalInfo = console.info;
+  const originalWarn = console.warn;
+
+  console.info = (message?: any, ...args: any[]) => {
+    // Check if this is an AMA warning
+    if (typeof message === "string" && message.includes("[ AMA ]")) {
+      // For AMA warnings, only log the message without the JSON object
+      originalInfo(message);
+    } else {
+      // For all other warnings, use the original behavior
+      originalInfo(message, ...args);
+    }
+  };
+
+  console.warn = (message?: any, ...args: any[]) => {
+    // Check if this is an AMA warning
+    if (typeof message === "string" && message.includes("[ AMA ]")) {
+      // For AMA warnings, only log the message without the JSON object
+      originalWarn(message);
+    } else {
+      // For all other warnings, use the original behavior
+      originalWarn(message, ...args);
+    }
+  };
+}
+
+/**
  * ThemedStatusBar component
  *
  * Updates status bar style based on current theme
