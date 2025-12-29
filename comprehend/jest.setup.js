@@ -105,6 +105,14 @@ jest.mock("react-native-reanimated", () => {
   return Reanimated;
 });
 
+// Mock React Native AMA
+jest.mock("@react-native-ama/internal/dist/utils/logger.js", () => {
+  return {
+    getContrastCheckerMaxDepth: () => 5,
+    shouldIgnoreContrastCheckForDisabledElement: () => true,
+  };
+});
+
 // Silence the warning: Animated: `useNativeDriver` is not supported
 jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 
