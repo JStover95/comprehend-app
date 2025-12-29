@@ -26,8 +26,6 @@ export type ThemeMode = "light" | "dark" | "system";
 export interface BaseComponentProps {
   /** Test identifier for testing with React Native Testing Library */
   testID?: string;
-  /** Custom style override */
-  style?: StyleProp<ViewStyle | TextStyle>;
   /** Whether component is disabled */
   disabled?: boolean;
   /** Accessibility label for screen readers */
@@ -36,6 +34,26 @@ export interface BaseComponentProps {
   accessibilityHint?: string;
   /** Accessibility role for semantic meaning */
   accessibilityRole?: AccessibilityRole;
+}
+
+/**
+ * Props for components that render View-like elements (TouchableOpacity, View, etc.)
+ *
+ * Uses ViewStyle for proper type safety with view components.
+ */
+export interface ViewComponentProps extends BaseComponentProps {
+  /** Custom style override for view components */
+  style?: StyleProp<ViewStyle>;
+}
+
+/**
+ * Props for components that render Text-like elements (Text, TextInput, etc.)
+ *
+ * Uses TextStyle for proper type safety with text components.
+ */
+export interface TextComponentProps extends BaseComponentProps {
+  /** Custom style override for text components */
+  style?: StyleProp<TextStyle>;
 }
 
 /**
