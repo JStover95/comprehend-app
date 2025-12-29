@@ -17,11 +17,13 @@ import { Button, Input, Text } from "@/components/ui";
 import type { ThemeMode } from "@/types";
 import { useState } from "react";
 import { Form } from "@react-native-ama/forms";
+import { getConfig } from "@/constants/config";
 
 export default function Index() {
   const { mode, colors, isDark, setTheme, spacing } = useTheme();
   const [inputValue, setInputValue] = useState("");
   const [inputError, setInputError] = useState<string | undefined>(undefined);
+  const config = getConfig();
 
   const handleThemeChange = (newMode: ThemeMode) => {
     setTheme(newMode);
@@ -60,6 +62,25 @@ export default function Index() {
           </Text>
           <Text variant="body" color="secondary">
             Current Mode: {mode} ({isDark ? "Dark" : "Light"})
+          </Text>
+        </View>
+
+        {/* Environment Configuration */}
+        <View style={styles.section}>
+          <Text variant="subheading" style={styles.sectionTitle}>
+            Environment Configuration
+          </Text>
+          <Text variant="body" color="secondary" style={styles.componentSpacing}>
+            Environment: {config.environment}
+          </Text>
+          <Text variant="body" color="secondary" style={styles.componentSpacing}>
+            API URL: {config.apiUrl}
+          </Text>
+          <Text variant="body" color="secondary" style={styles.componentSpacing}>
+            AWS Region: {config.region}
+          </Text>
+          <Text variant="body" color="secondary" style={styles.componentSpacing}>
+            Debug Mode: {config.debugMode ? "Enabled" : "Disabled"}
           </Text>
         </View>
 
