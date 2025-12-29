@@ -60,3 +60,52 @@ jest.mock("@react-native-ama/react-native", () => {
     Text: RN.Text,
   };
 });
+
+// Mock React Native AMA Forms
+jest.mock("@react-native-ama/forms", () => {
+  const React = require("react");
+  const RN = require("react-native");
+
+  const Form = ({ children, ...props }) => children;
+  Form.displayName = "Form";
+
+  const TextInput = React.forwardRef((props, ref) => {
+    const { labelComponent, errorComponent, ...textInputProps } = props;
+    const children = [
+      labelComponent,
+      React.createElement(RN.TextInput, {
+        key: "textinput",
+        ...textInputProps,
+        ref,
+      }),
+      errorComponent,
+    ].filter(Boolean);
+    return React.createElement(React.Fragment, null, ...children);
+  });
+  TextInput.displayName = "TextInput";
+
+  return {
+    Form,
+    TextInput,
+    FormField: ({ children, ...props }) => children,
+    FormSubmit: ({ children, ...props }) => children,
+    FormSwitch: ({ children, ...props }) => children,
+    useFormField: () => ({
+      value: "",
+      error: undefined,
+      touched: false,
+      setValue: jest.fn(),
+      setTouched: jest.fn(),
+      validate: jest.fn(() => true),
+    }),
+    useTextInput: () => ({
+      value: "",
+      error: undefined,
+      touched: false,
+      hasValidation: false,
+      setValue: jest.fn(),
+      setTouched: jest.fn(),
+      validate: jest.fn(() => true),
+    }),
+  };
+});
