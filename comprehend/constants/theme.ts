@@ -15,22 +15,22 @@
  */
 export const Colors = {
   light: {
-    primary: "#007AFF",
-    secondary: "#5856D6",
+    primary: "#003D9E",
+    secondary: "#3D3BA8",
     background: "#FFFFFF",
     surface: "#F2F2F7",
     text: "#000000",
     textSecondary: "#3C3C43",
     textTertiary: "#8E8E93",
-    border: "#C7C7CC",
+    border: "#D0D0D5",
     error: "#FF3B30",
     success: "#34C759",
     warning: "#FF9500",
     info: "#5AC8FA",
   },
   dark: {
-    primary: "#0A84FF",
-    secondary: "#5E5CE6",
+    primary: "#004A99",
+    secondary: "#3A38A8",
     background: "#000000",
     surface: "#1C1C1E",
     text: "#FFFFFF",
