@@ -105,7 +105,7 @@ cdk/lib/
     └── index.ts
 ```
 
-### 0.2 Database Infrastructure
+### ✅ 0.2 Database Infrastructure
 
 **Location**: `cdk/lib/constructs/database/`
 
@@ -117,7 +117,7 @@ cdk/lib/
 
 **Schema to implement** (see [Appendix: Database Schema](#appendix-database-schema))
 
-### 0.3 Expo App Structure
+### ✅ 0.3 Expo App Structure
 
 **Location**: `comprehend/`
 
