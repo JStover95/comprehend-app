@@ -207,16 +207,16 @@ This document breaks down the implementation plan into actionable, dependency-or
 
 **Tests**:
 
-- [ ] T042 Create integration test comprehend/**tests**/integration/theme-and-components.test.tsx verifying theme system works with all base components following comprehend/design-docs/testing/integration-testing.md
-- [ ] T043 Create accessibility test suite comprehend/**tests**/accessibility/contrast.test.ts verifying all theme colors meet WCAG 2.1 AA contrast requirements (4.5:1 normal text, 3:1 large text) following comprehend/design-docs/accessibility.md
-- [ ] T048 [US1] Create comprehend/**tests**/contexts/ThemeContext.system-change.test.tsx testing that app responds to system theme changes while running (SC-008) by mocking useColorScheme changes and verifying theme updates propagate correctly
+- [X] T042 Create integration test comprehend/**tests**/integration/theme-and-components.test.tsx verifying theme system works with all base components following comprehend/design-docs/testing/integration-testing.md
+- [X] T043 Create accessibility test suite comprehend/**tests**/accessibility/contrast.test.ts verifying all theme colors meet WCAG 2.1 AA contrast requirements (4.5:1 normal text, 3:1 large text) following comprehend/design-docs/accessibility.md
+- [X] T048 [US1] Create comprehend/**tests**/contexts/ThemeContext.system-change.test.tsx testing that app responds to system theme changes while running (SC-008) by mocking useColorScheme changes and verifying theme updates propagate correctly
 
 **Implementation**:
 
-- [ ] T044 Verify all components use test IDs from comprehend/components/components.ids.ts following comprehend/design-docs/testing/unit-testing.md Test ID Pattern
-- [ ] T045 Run React Native AMA in development mode and fix any accessibility issues detected following research.md React Native AMA decision
-- [ ] T046 Verify all touch targets meet minimum 44x44 points requirement following comprehend/design-docs/accessibility.md
-- [ ] T047 Update comprehend/README.md with setup instructions, environment configuration guide, and testing instructions
+- [X] T044 Verify all components use test IDs from comprehend/components/components.ids.ts following comprehend/design-docs/testing/unit-testing.md Test ID Pattern
+- [X] T045 Run React Native AMA in development mode and fix any accessibility issues detected following research.md React Native AMA decision
+- [X] T046 Verify all touch targets meet minimum 44x44 points requirement following comprehend/design-docs/accessibility.md
+- [X] T047 Update comprehend/README.md with setup instructions, environment configuration guide, and testing instructions
 
 ## Task Summary by User Story
 
